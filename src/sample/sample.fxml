@@ -9,16 +9,28 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.ProgressBar?>
 <BorderPane fx:controller="sample.Controller"
             xmlns:fx="http://javafx.com/fxml">
     <center>
         <VBox>
-            <TextField fx:id="stepOneTextField">
-            </TextField>
+            <TextField fx:id="stepOneTextField"/>
             <Label fx:id="stepOneLabel" text=""/>
-            <Button fx:id="stepOneButton" text="Submit" onAction="#stepOneSubmit"/>
-            <Hyperlink fx:id="stepOneHyperlink" text="webSite"/>
-            <Button fx:id="stepOneAutoDownload" text="Auto-download" onAction="#stepOneDownload"/>
+            <Button fx:id="stepOneButton" text="Submit" onAction="#stepOneSubmitAction"/>
+            <Hyperlink fx:id="stepOneHyperlink" text="webSite" onAction="#openWebsiteAction"/>
+            <Button fx:id="stepOneAutoDownloadButton" text="Auto-download" onAction="#stepOneDownloadAction"/>
+            <Button fx:id="setpOneCancelButton" text="Cancel" onAction="#stepOneDownloadAction" disable="true"/>
+            <Separator/>
+            <Label fx:id="directoryLabel" text="No directory be choosed."/>
+            <Button fx:id="openDirectoryButton" text="Submit" onAction="#openDirectoryAction"/>
+            <Separator/>
         </VBox>
     </center>
+    <bottom>
+        <VBox>
+            <Label fx:id="progressBarLabel" text="Not thing happen"/>
+            <ProgressBar fx:id="progressBar"/>
+        </VBox>
+    </bottom>
 </BorderPane>

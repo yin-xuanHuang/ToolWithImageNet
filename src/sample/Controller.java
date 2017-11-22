@@ -1,9 +1,12 @@
 package sample;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.stage.Stage;
+import java.awt.Desktop;
+import java.net.*;
+
 
 import java.io.*;
 import java.nio.file.FileSystems;
@@ -19,21 +22,29 @@ import java.util.regex.Pattern;
 public class Controller {
 
     private final String mainDirName = "machineLearningWithImageNetDir";
-
     private final String resourceDirName = "resourceDir";
-
     private final String wordsTextName = "words.txt";
-
     private final String projectWnidTextName = "wnid.txt";
+
+    DoWork task;
 
     @FXML
     private TextField stepOneTextField;
 
     @FXML
+    private Label stepOneLabel, progressBarLabel;
+
+    @FXML
+    private Button openDirectoryButton, setpOneCancelButton, stepOneAutoDownloadButton;
+
+    @FXML
+    private ProgressBar progressBar;
+
+    @FXML
     private Hyperlink stepOneHyperlink;
 
     @FXML
-    private Label stepOneLabel;
+    private Stage primaryStage;
 
 
     public void initialize() {
@@ -52,6 +63,8 @@ public class Controller {
             e.printStackTrace();
             return;
         }
+
+
     }
 
     /*1.確認輸入有無合法並處理。
@@ -59,7 +72,7 @@ public class Controller {
      *3.將輸入關鍵字與檔案內容進行比對。
      *4.建立專案以及結果資料儲存。         */
     @FXML
-    public void stepOneSubmit() {
+    public void stepOneSubmitAction() {
         String inputKeywords = stepOneTextField.getText();
 
 
@@ -106,6 +119,7 @@ public class Controller {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            return;
         }
 
 //        step 3
@@ -163,8 +177,48 @@ public class Controller {
     }
 
     @FXML
-    public void stepOneDownload() {
-        System.out.println("auto-download be clicked.");
+    public void openWebsiteAction() {
+        Thread thread = new Thread() {
+            @Override
+            public void run(){
+                Desktop d = Desktop.getDesktop();
+                try {
+                    d.browse(new URI("http://image-net.org/download-imageurls"));
+                } catch(URISyntaxException e1) {
+                    e1.printStackTrace();
+                } catch(IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        };
+        thread.start();
+    }
+
+    @FXML
+    public void stepOneDownloadAction(ActionEvent actionEvent) {
+
+        if(((Button)actionEvent.getSource()).getId().equals("stepOneAutoDownloadButton")){
+            System.out.println("auto-download be clicked.");//debug
+            //        下載任務執行緒
+            task = new DoWork();
+            progressBar.progressProperty().bind(task.progressProperty());
+            progressBarLabel.textProperty().bind(task.messageProperty());
+
+            new Thread(task).start();
+            System.out.println("auto-download thread start");//debug
+            setpOneCancelButton.setDisable(false);
+            stepOneAutoDownloadButton.setDisable(true);
+
+
+        } else {
+            task.cancel();
+            setpOneCancelButton.setDisable(true);
+            stepOneAutoDownloadButton.setDisable(false);
+        }
+    }
+
+    @FXML
+    public void openDirectoryAction() {
 
     }
 
