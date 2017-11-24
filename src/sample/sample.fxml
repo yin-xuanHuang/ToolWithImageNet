@@ -1,30 +1,60 @@
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.layout.GridPane?>
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.text.Text?>
 <?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.text.Text?>
 <BorderPane fx:controller="sample.Controller"
             xmlns:fx="http://javafx.com/fxml">
     <center>
         <VBox>
             <TextField fx:id="stepOneTextField"/>
-            <Label fx:id="stepOneLabel" text=""/>
-            <Button fx:id="stepOneButton" text="Submit" onAction="#stepOneSubmitAction"/>
-            <Hyperlink fx:id="stepOneHyperlink" text="webSite" onAction="#openWebsiteAction"/>
-            <Button fx:id="stepOneAutoDownloadButton" text="Auto-download" onAction="#stepOneDownloadAction"/>
+            <Label fx:id="stepOneLabel" text="stepOneLabel"/>
+            <Button fx:id="stepOneButton" text="Submit" onAction="#stepOneSubmitAction" disable="true"/>
+            <Hyperlink fx:id="stepOneHyperlinkWord" text="words.txt" onAction="#openWebsiteAction"/>
+            <Hyperlink fx:id="stepOneHyperlinkUrls" text="4 urlCompress file" onAction="#openWebsiteAction"/>
+            <Button fx:id="stepOneAutoDownloadButton" text="Auto-download" onAction="#stepOneDownloadAction" disable="true"/>
             <Button fx:id="setpOneCancelButton" text="Cancel" onAction="#stepOneDownloadAction" disable="true"/>
             <Separator/>
             <Label fx:id="directoryLabel" text="No directory be choosed."/>
-            <Button fx:id="openDirectoryButton" text="Submit" onAction="#openDirectoryAction"/>
+            <Button fx:id="openDirectoryButton" text="Open project" onAction="#openDirectoryAction" disable="true"/>
             <Separator/>
+
+            <Text text="text"/>
+            <Label fx:id="stepTwoLabel" text="stepTwoLabel"/>
+            <Button fx:id="stepTwoRun" text="Run" onAction="#stepTwoRunAction" disable="true"/>
+            <Button fx:id="stepTwoRemove" text="Remove" onAction="#stepTwoRunAction" disable="true"/>
+            <Button fx:id="stepTwoCancel" text="cancel" onAction="#stepTwoRunAction" disable="true"/>
+            <Separator/>
+            <Text text="text"/>
+            <Label fx:id="stepThreeLabel" text="stepThreeLabel"/>
+            <Button fx:id="stepThreeRun" text="Run" onAction="#stepThreeRunAction" disable="true"/>
+            <Button fx:id="stepThreeRemove" text="Remove" onAction="#stepThreeRunAction" disable="true"/>
+            <Button fx:id="stepThreeCancel" text="cancel" onAction="#stepThreeRunAction" disable="true"/>
+            <Separator/>
+            <Text text="text"/>
+            <Label fx:id="stepFourLabel" text="stepFourLabel"/>
+            <Button fx:id="stepFourRun" text="Run" onAction="#stepFourRunAction" disable="true"/>
+            <Button fx:id="stepFourRemove" text="Remove" onAction="#stepFourRunAction" disable="true"/>
+            <Button fx:id="stepFourCancel" text="cancel" onAction="#stepFourRunAction" disable="true"/>
+            <Separator/>
+            <Text text="text"/>
+            <Label fx:id="stepFiveLabel" text="stepFiveLabel"/>
+            <Button fx:id="stepFiveRun" text="Run" onAction="#stepFiveRunAction" disable="true"/>
+            <Button fx:id="stepFiveRemove" text="Remove" onAction="#stepFiveRunAction" disable="true"/>
+            <Button fx:id="stepFiveCancel" text="cancel" onAction="#stepFiveRunAction" disable="true"/>
+            <Separator/>
+            <Text text="text"/>
+            <Label fx:id="stepSixLabel" text="stepSixLabel"/>
+            <Button fx:id="stepSixRun" text="Run" onAction="#stepSixRunAction" disable="true"/>
+            <Button fx:id="stepSixRemove" text="Remove" onAction="#stepSixRunAction" disable="true"/>
+            <Button fx:id="stepSixCancel" text="cancel" onAction="#stepSixRunAction" disable="true"/>
+            <Separator/>
+
         </VBox>
     </center>
     <bottom>

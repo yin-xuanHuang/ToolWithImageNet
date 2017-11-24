@@ -7,6 +7,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="jarchivelib-0.7.1-jar-with-dependencies" level="project" />
+    <orderEntry type="library" name="ant" level="project" />
   </component>
 </module>
-

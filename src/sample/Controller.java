@@ -3,6 +3,7 @@ package sample;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import java.awt.Desktop;
 import java.net.*;
@@ -25,23 +26,35 @@ public class Controller {
     private final String resourceDirName = "resourceDir";
     private final String wordsTextName = "words.txt";
     private final String projectWnidTextName = "wnid.txt";
+    private final String urlDirectoryName = "urlCollection";
 
-    DoWork task;
+    private DoWork task;
+    private UrlMatcher urlMatcher;
 
     @FXML
     private TextField stepOneTextField;
 
     @FXML
-    private Label stepOneLabel, progressBarLabel;
+    private Label stepOneLabel, directoryLabel, progressBarLabel;
 
     @FXML
-    private Button openDirectoryButton, setpOneCancelButton, stepOneAutoDownloadButton;
+    private Button openDirectoryButton,
+            setpOneCancelButton,
+            stepOneAutoDownloadButton;
+
+    @FXML
+    private Button stepOneButton,
+            stepTwoRun, stepTwoRemove,stepTwoCancel,
+            stepThreeRun, stepThreeRerun,
+            stepFourRun, stepFourRerun,
+            stepFiveRun, stepFiveRerun,
+            stepSixRun, stepSixRerun;
 
     @FXML
     private ProgressBar progressBar;
 
-    @FXML
-    private Hyperlink stepOneHyperlink;
+//    @FXML
+//    private Hyperlink stepOneHyperlinkWord, stepOneHyperlinkUrls;
 
     @FXML
     private Stage primaryStage;
@@ -50,18 +63,41 @@ public class Controller {
     public void initialize() {
 //      確認主、資源目錄有無存在，不存在就建立。
         try {
-            Path mainDir = FileSystems.getDefault().getPath(mainDirName);
-            Path resourceDir = FileSystems.getDefault().getPath(mainDirName, resourceDirName);
-            if(!Files.exists(mainDir)) {
-                Files.createDirectory(mainDir);
+            Path mainDirPath = FileSystems.getDefault().getPath(mainDirName);
+            Path resourceDirPath = FileSystems.getDefault().getPath(mainDirName, resourceDirName);
+            if(!Files.exists(mainDirPath)) {
+                Files.createDirectory(mainDirPath);
             }
-            if(!Files.exists(resourceDir)) {
-                Files.createDirectory(resourceDir);
+            if(!Files.exists(resourceDirPath)) {
+                Files.createDirectory(resourceDirPath);
+            } else {
+
+                if(Files.exists(FileSystems.getDefault().getPath(mainDirName, resourceDirName, "words.txt")))
+                {
+                    stepOneButton.setDisable(false);
+                }
+
+                ArrayList<String> resourceFiles = new ArrayList<>();
+                resourceFiles.add("winter11_urls.txt");
+                resourceFiles.add("fall11_urls.txt");
+                resourceFiles.add("spring10_urls.txt");
+                resourceFiles.add("urls.txt");
+                Path resourceFilePath;
+
+                for(String s:resourceFiles) {
+                    resourceFilePath = FileSystems.getDefault().getPath(mainDirName, resourceDirName, s);
+                    if(!Files.exists(resourceFilePath)){
+                        stepOneAutoDownloadButton.setDisable(false);
+                        break;
+                    }
+                    if(s.equals("urls.txt")){
+                        openDirectoryButton.setDisable(false);
+                    }
+                }
             }
 
         } catch(IOException e) {
             e.printStackTrace();
-            return;
         }
 
 
@@ -145,7 +181,7 @@ public class Controller {
 //        System.out.println(System.getProperty("user.dir"));//debug
 
         if(valideWnid.size() == 0) {
-            System.out.println("no match avaliable.");
+            System.out.println("No matching available.");
             return;
         }
 
@@ -172,25 +208,40 @@ public class Controller {
             return;
         }
 
-        stepOneLabel.setText("Project " + valideTest + "has created.");
+        stepOneLabel.setText("Project " + valideTest + "has created.(" + valideWnid.size() + " wnid(s) counted)");
 
     }
 
     @FXML
-    public void openWebsiteAction() {
-        Thread thread = new Thread() {
-            @Override
-            public void run(){
+    public void openWebsiteAction(ActionEvent actionEvent) {
+
+        String urlWord = "http://image-net.org/archive/words.txt";
+        String urlUrls = "http://image-net.org/download-imageurls";
+        final String url;
+
+        Object source = actionEvent.getSource();
+
+        if(source instanceof Hyperlink){
+            if(((Hyperlink) source).getId().equals("stepOneHyperlinkWord")){
+                url = urlWord;
+            } else {
+                url = urlUrls;
+            }
+        } else {
+            System.out.println("Something wrong with openWebsiteAction");
+            return;
+        }
+
+        Thread thread = new Thread(() ->{
                 Desktop d = Desktop.getDesktop();
                 try {
-                    d.browse(new URI("http://image-net.org/download-imageurls"));
+                    d.browse(new URI(url));
                 } catch(URISyntaxException e1) {
                     e1.printStackTrace();
                 } catch(IOException e1) {
                     e1.printStackTrace();
                 }
-            }
-        };
+            });
         thread.start();
     }
 
@@ -199,16 +250,24 @@ public class Controller {
 
         if(((Button)actionEvent.getSource()).getId().equals("stepOneAutoDownloadButton")){
             System.out.println("auto-download be clicked.");//debug
-            //        下載任務執行緒
+//            下載任務執行緒
             task = new DoWork();
             progressBar.progressProperty().bind(task.progressProperty());
             progressBarLabel.textProperty().bind(task.messageProperty());
+
+            task.setOnSucceeded(e -> {
+                stepOneButton.setDisable(false);
+                setpOneCancelButton.setDisable(true);
+                openDirectoryButton.setDisable(false);
+                progressBar.progressProperty().unbind();
+                progressBarLabel.textProperty().unbind();
+                progressBarLabel.setText("Download finished.");
+            });
 
             new Thread(task).start();
             System.out.println("auto-download thread start");//debug
             setpOneCancelButton.setDisable(false);
             stepOneAutoDownloadButton.setDisable(true);
-
 
         } else {
             task.cancel();
@@ -220,7 +279,166 @@ public class Controller {
     @FXML
     public void openDirectoryAction() {
 
+        stepTwoRun.setDisable(true);
+        stepThreeRun.setDisable(true);
+        stepFourRun.setDisable(true);
+        stepFiveRun.setDisable(true);
+        stepSixRun.setDisable(true);
+
+//        開啟選擇資料夾視窗
+        DirectoryChooser chooser = new DirectoryChooser();
+        chooser.setTitle("Choose project directory");
+
+        File project = chooser.showDialog(primaryStage);
+        if(project != null) {
+            try {
+                directoryLabel.setText(project.getName());
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+            }
+            System.out.println(project.getName());// debug
+        }
+
+        try {
+            if (!Files.exists(FileSystems.getDefault().getPath(mainDirName, project.getName()))) {
+                directoryLabel.setText("Not a project in machineLearningWithImageNet directory.");
+                return;
+            }
+        } catch(NullPointerException e){
+            e.printStackTrace();
+            directoryLabel.setText("Not a project in machineLearningWithImageNet directory.");
+            return;
+        }
+
+//      確認子專案狀態，以便開啟所需功能
+
+        ArrayList<String> subProjectsName = new ArrayList<>();
+        subProjectsName.add(urlDirectoryName);
+        subProjectsName.add("imageCollection");
+        subProjectsName.add("cleanImage");
+        subProjectsName.add("hdf5");
+        subProjectsName.add("parameters");
+
+        ArrayList<Button> subProjectsRunButton = new ArrayList<>();
+        subProjectsRunButton.add(stepTwoRun);
+        subProjectsRunButton.add(stepThreeRun);
+        subProjectsRunButton.add(stepFourRun);
+        subProjectsRunButton.add(stepFiveRun);
+        subProjectsRunButton.add(stepSixRun);
+
+        Path subProjectPath;
+
+        for(int i=0;i < subProjectsName.size(); i++) {
+            subProjectPath = FileSystems.getDefault().getPath(mainDirName,
+                                                              project.getName(),
+                                                              subProjectsName.get(i));
+            if(!Files.exists(subProjectPath)){
+                subProjectsRunButton.get(i).setDisable(false);
+                break;
+
+            }
+        }
+
+
     }
+
+    @FXML
+    public void stepTwoRunAction(ActionEvent actionEvent) {
+
+        if(((Button)actionEvent.getSource()).getId().equals("stepTwoRun")) {
+
+            System.out.println("stepTwo thread start");//debug
+
+//            確認檔案存在
+            Path projectPath = FileSystems.getDefault().getPath(mainDirName,
+                                                                directoryLabel.getText(),
+                                                                projectWnidTextName);
+
+            if (!Files.exists(projectPath)) {
+                System.out.println(directoryLabel.getText() + " can't find.");
+                return;
+            }
+
+//            讀wnid檔
+            ArrayList<String> wnidList = new ArrayList<>();
+            try (BufferedReader wnidTextReader = new BufferedReader(new FileReader(projectPath.toString()))) {
+                String input;
+                while ((input = wnidTextReader.readLine()) != null) {
+                    wnidList.add(input);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                return;
+            }
+
+    /*        for(String s:wnidList) {//debug
+                System.out.println(s);
+            }*/
+
+            urlMatcher = new UrlMatcher(mainDirName,
+                                                resourceDirName,
+                                                directoryLabel.getText(),
+                                                urlDirectoryName,
+                                                wnidList);
+
+            urlMatcher.setOnSucceeded(e -> {
+                stepTwoCancel.setDisable(true);
+                stepTwoRemove.setDisable(false);
+                stepThreeRun.setDisable(false);
+                progressBar.progressProperty().unbind();
+                progressBarLabel.textProperty().unbind();
+                progressBarLabel.setText("SubProject(create url files) get done.");
+            });
+
+            progressBar.progressProperty().bind(urlMatcher.progressProperty());
+            progressBarLabel.textProperty().bind(urlMatcher.messageProperty());
+
+            new Thread(urlMatcher).start();
+            System.out.println("urlMatcher thread start");//debug
+            stepTwoRun.setDisable(true);
+            stepTwoCancel.setDisable(false);
+
+        } else if(((Button)actionEvent.getSource()).getId().equals("stepTwoCancel")){
+            urlMatcher.cancel();
+            stepTwoRun.setDisable(false);
+            stepTwoCancel.setDisable(true);
+            stepTwoRemove.setDisable(true);
+            progressBarLabel.setText("Cancel the action.");
+        } else {
+            Path projectUrlDirPath = FileSystems.getDefault().getPath(mainDirName,
+                                                                directoryLabel.getText(),
+                                                                urlDirectoryName);
+            try{
+                Files.deleteIfExists(projectUrlDirPath);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            stepTwoRun.setDisable(false);
+            stepTwoRemove.setDisable(true);
+        }
+    }
+
+    @FXML
+    public void stepThreeRunAction(ActionEvent actionEvent) {
+
+    }
+
+    @FXML
+    public void stepFourRunAction(ActionEvent actionEvent) {
+
+    }
+
+    @FXML
+    public void stepFiveRunAction(ActionEvent actionEvent) {
+
+    }
+
+    @FXML
+    public void stepSixRunAction(ActionEvent actionEvent) {
+
+    }
+
+
 
 //    字元辨識
     private boolean isAlpha(String name) {
@@ -239,11 +457,12 @@ public class Controller {
      * Join a collection of strings and add commas as delimiters.
      * @require words.size() > 0 && words != null
      */
-    public static String concatWithCommas(Collection<String> words, char delimiter) {
+    private static String concatWithCommas(Collection<String> words, char delimiter) {
         StringBuilder wordList = new StringBuilder();
         for (String word : words) {
             wordList.append(word + delimiter);
         }
         return new String(wordList.deleteCharAt(wordList.length() - 1));
     }
+
 }

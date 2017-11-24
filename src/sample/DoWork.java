@@ -1,11 +1,11 @@
 package sample;
 
 import javafx.concurrent.Task;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -50,17 +50,75 @@ public class DoWork extends Task<Void> {
     @Override
     protected Void call() throws Exception {
         this.downloadFiles();
+        this.decompressFiles();
+        this.updateMessage("Resources are ready.");
         return null;
     }
 
     private void decompressFiles() {
+        for(int i=1;i<5;i++) {
+            try {
+                Path inPath = FileSystems.getDefault().getPath(mainDirName,
+                        resourceDirName,
+                        fileNameList.get(i));
 
+                if(!Files.exists(inPath))
+                    continue;
+
+                this.updateMessage(i + " / 4 : " + fileNameList.get(i) + " is decompressing...");
+
+                TarArchiveInputStream zis = new TarArchiveInputStream(new GzipCompressorInputStream(
+                        new BufferedInputStream(new FileInputStream(inPath.toString()))));
+                TarArchiveEntry ze;
+
+                try {
+                    while ((ze = zis.getNextTarEntry()) != null) {
+                        if (ze.isDirectory()) {
+                            continue;
+                        }
+                        Path outPath = FileSystems.getDefault().getPath(mainDirName,
+                                                                        resourceDirName,
+                                                                        ze.getName());
+                        OutputStream fos = new BufferedOutputStream(new FileOutputStream(outPath.toString()));
+                        try {
+                            try {
+                                final byte[] buf = new byte[8192];
+                                int bytesRead;
+                                long nread = 0L;
+                                long length = ze.getSize();
+
+                                while (-1 != (bytesRead = zis.read(buf))){
+                                    fos.write(buf, 0, bytesRead);
+                                    nread += bytesRead;
+                                    updateMessage(nread + "/" + length);
+                                    updateProgress(nread, length);
+                                }
+                            } finally {
+                                fos.close();
+                            }
+                        } catch (final IOException ioe) {
+                            ioe.printStackTrace();
+                        }
+                    }
+                } finally {
+                    zis.close();
+                }
+
+                Files.delete(inPath);
+
+                if(isCancelled())
+                    break;
+
+            }  catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void downloadFiles() {
-        Path wantToStoreFile = null;
+        Path wantToStoreFile;
         int i;
-        for(i=0; i<4; i++) {
+        for(i=0; i<5; i++) {
             try {
                 wantToStoreFile = FileSystems.getDefault().getPath(mainDirName,
                         resourceDirName,
@@ -78,11 +136,11 @@ public class DoWork extends Task<Void> {
                 fos = new FileOutputStream(file);
 
                 this.updateProgress(0, total);
-                this.updateMessage((i + 1) + " / 4 : " + fileNameList.get(i) + " is downloading...");
+                this.updateMessage((i + 1) + " / 5 : " + fileNameList.get(i) + " is downloading...");
 
                 long count = 0;
                 byte[] b = new byte[8192];
-                int l = 0;
+                int l ;
                 while ((l = is.read(b)) != -1) {
                     this.updateProgress(count += l, total);
                     fos.write(b, 0, l);
@@ -97,10 +155,8 @@ public class DoWork extends Task<Void> {
                 conn.disconnect();
             } catch (MalformedURLException e) {
                 System.out.println("Malformed URL: " + e.getMessage());
-                System.out.println(i);
             } catch (IOException e) {
                 System.out.println("IOException: " + e.getMessage());
-                System.out.println(i);
             }
         }
         this.updateMessage("Download finished.");
