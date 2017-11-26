@@ -13,30 +13,31 @@ public class UrlMatcher extends Task<Void> {
 
     private ArrayList<String> wnidList;
     private ArrayList<String> urlFilesName;
-    private ArrayList<Integer> urlfilesLines;
+    private ArrayList<Integer> urlFilesLines;
     private final String mainDirName;
     private final String resourceDirName;
     private final String projectDirName;
     private final String urlDirName;
     private final String urlMatchFileName;
     private final String urlUnmatchFileName;
-    private final int chooseUrl0Max = 1000;
+//    private final int chooseUrl0Max = 1000;
 
 
     public UrlMatcher(String mainDirName,
                       String resourceDirName,
                       String projectDirName,
                       String urlDirName,
+                      String urlMatchFileName,
+                      String urlUnmatchFileName,
                       ArrayList<String> wnidList) {
 
         this.mainDirName = mainDirName;
         this.resourceDirName = resourceDirName;
         this.projectDirName = projectDirName;
         this.urlDirName = urlDirName;
+        this.urlMatchFileName = urlMatchFileName;
+        this.urlUnmatchFileName = urlUnmatchFileName;
         this.wnidList = wnidList;
-
-        this.urlMatchFileName = "url1.txt";
-        this.urlUnmatchFileName = "url0.txt";
 
         urlFilesName = new ArrayList<>();
         urlFilesName.add("winter11_urls.txt");
@@ -44,7 +45,7 @@ public class UrlMatcher extends Task<Void> {
         urlFilesName.add("spring10_urls.txt");
         urlFilesName.add("urls.txt");
 
-        urlfilesLines = new ArrayList<>();
+        urlFilesLines = new ArrayList<>();
 
         updateMessage("準備中。。。");
 
@@ -82,7 +83,7 @@ public class UrlMatcher extends Task<Void> {
 
 //            以"列"作為進度條的單位
 //            long totalLines = Files.lines(urlFilePath).count();// 執行時間比較長
-            long totalLines = urlfilesLines.get(i);
+            long totalLines = urlFilesLines.get(i);
             long lineCount = 0;
             String message = "(" + (i+1) + " / " + urlFilesName.size() + ")Matching " + urlFilesName.get(i) + " : ";
             Random random = new Random();
@@ -201,7 +202,7 @@ public class UrlMatcher extends Task<Void> {
                                                                 urlFileName);
 
             try {
-                urlfilesLines.add(countLines(urlFilePath.toString()));
+                urlFilesLines.add(countLines(urlFilePath.toString()));
                 System.out.println(urlFileName + " has " + countLines(urlFilePath.toString()) + " lines.");//debug
             } catch (IOException e) {
                 e.printStackTrace();

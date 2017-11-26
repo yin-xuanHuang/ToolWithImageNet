@@ -26,10 +26,18 @@ public class Controller {
     private final String resourceDirName = "resourceDir";
     private final String wordsTextName = "words.txt";
     private final String projectWnidTextName = "wnid.txt";
-    private final String urlDirectoryName = "urlCollection";
+
+    private final String urlDirName = "urlCollection";
+    private final String urlMatchFileName = "url1.txt";
+    private final String urlUnmatchFileName = "url0.txt";
+
+    private final String imageDirName = "imageCollection";
+    private final String imageMatchedDirName = "image1";
+    private final String imageUnmatchedDirName = "image0";
 
     private DoWork task;
     private UrlMatcher urlMatcher;
+    private ImageForeman imageForeman;
 
     @FXML
     private TextField stepOneTextField;
@@ -45,7 +53,7 @@ public class Controller {
     @FXML
     private Button stepOneButton,
             stepTwoRun, stepTwoRemove,stepTwoCancel,
-            stepThreeRun, stepThreeRerun,
+            stepThreeRun, stepThreeRemove, stepThreeCancel,
             stepFourRun, stepFourRerun,
             stepFiveRun, stepFiveRerun,
             stepSixRun, stepSixRerun;
@@ -313,8 +321,8 @@ public class Controller {
 //      確認子專案狀態，以便開啟所需功能
 
         ArrayList<String> subProjectsName = new ArrayList<>();
-        subProjectsName.add(urlDirectoryName);
-        subProjectsName.add("imageCollection");
+        subProjectsName.add(urlDirName);
+        subProjectsName.add(imageDirName);
         subProjectsName.add("cleanImage");
         subProjectsName.add("hdf5");
         subProjectsName.add("parameters");
@@ -378,7 +386,9 @@ public class Controller {
             urlMatcher = new UrlMatcher(mainDirName,
                                                 resourceDirName,
                                                 directoryLabel.getText(),
-                                                urlDirectoryName,
+                                                urlDirName,
+                                                urlMatchFileName,
+                                                urlUnmatchFileName,
                                                 wnidList);
 
             urlMatcher.setOnSucceeded(e -> {
@@ -400,6 +410,8 @@ public class Controller {
 
         } else if(((Button)actionEvent.getSource()).getId().equals("stepTwoCancel")){
             urlMatcher.cancel();
+            progressBar.progressProperty().unbind();
+            progressBarLabel.textProperty().unbind();
             stepTwoRun.setDisable(false);
             stepTwoCancel.setDisable(true);
             stepTwoRemove.setDisable(true);
@@ -407,7 +419,7 @@ public class Controller {
         } else {
             Path projectUrlDirPath = FileSystems.getDefault().getPath(mainDirName,
                                                                 directoryLabel.getText(),
-                                                                urlDirectoryName);
+                                                                urlDirName);
             try{
                 Files.deleteIfExists(projectUrlDirPath);
             } catch (IOException e) {
@@ -420,6 +432,54 @@ public class Controller {
 
     @FXML
     public void stepThreeRunAction(ActionEvent actionEvent) {
+
+        if(((Button)actionEvent.getSource()).getId().equals("stepThreeRun")) {
+            disableAllButton();
+            imageForeman = new ImageForeman(mainDirName,
+                                                        directoryLabel.getText(),
+                                                        imageDirName,
+                                                        imageMatchedDirName,
+                                                        imageUnmatchedDirName,
+                                                        urlDirName,
+                                                        urlMatchFileName,
+                                                        urlUnmatchFileName);
+            imageForeman.setOnSucceeded(e -> {
+                stepThreeCancel.setDisable(true);
+                stepThreeRemove.setDisable(false);
+                stepFourRun.setDisable(false);
+                progressBar.progressProperty().unbind();
+                progressBarLabel.textProperty().unbind();
+                progressBarLabel.setText("SubProject(download image files) get done.");
+            });
+
+            progressBar.progressProperty().bind(imageForeman.progressProperty());
+            progressBarLabel.textProperty().bind(imageForeman.messageProperty());
+
+            new Thread(imageForeman).start();
+            System.out.println("ImageForeman thread start");//debug
+            stepThreeRun.setDisable(true);
+            stepThreeCancel.setDisable(false);
+
+        } else if(((Button)actionEvent.getSource()).getId().equals("stepThreeCancel")){
+            imageForeman.cancel();
+            progressBar.progressProperty().unbind();
+            progressBarLabel.textProperty().unbind();
+            stepThreeRun.setDisable(false);
+            stepThreeCancel.setDisable(true);
+            stepThreeRemove.setDisable(true);
+            progressBarLabel.setText("Cancel the action.");
+        } else {
+            Path projectImageDirPath = FileSystems.getDefault().getPath(mainDirName,
+                                                                    directoryLabel.getText(),
+                                                                    imageDirName);
+            try{
+                Files.deleteIfExists(projectImageDirPath);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            stepThreeRun.setDisable(false);
+            stepThreeRemove.setDisable(true);
+        }
 
     }
 
@@ -463,6 +523,26 @@ public class Controller {
             wordList.append(word + delimiter);
         }
         return new String(wordList.deleteCharAt(wordList.length() - 1));
+    }
+
+    @FXML
+    private void disableAllButton() {
+        openDirectoryButton.setDisable(true);
+        setpOneCancelButton.setDisable(true);
+        stepOneAutoDownloadButton.setDisable(true);
+        stepOneButton.setDisable(true);
+        stepTwoRun.setDisable(true);
+        stepTwoRemove.setDisable(true);
+        stepTwoCancel.setDisable(true);
+        stepThreeRun.setDisable(true);
+        stepThreeRemove.setDisable(true);
+        stepThreeCancel.setDisable(true);
+        stepFourRun.setDisable(true);
+
+        stepFiveRun.setDisable(true);
+
+        stepSixRun.setDisable(true);
+
     }
 
 }
