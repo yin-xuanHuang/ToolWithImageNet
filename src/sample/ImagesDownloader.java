@@ -86,6 +86,7 @@ public class ImagesDownloader extends Task<Void> {
             file = new File(wantToStoreFilePath.toString());
             url = new URL(nameAndUrl[1]);
             conn = (HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(7000);
             conn.connect();
 
             is = new BufferedInputStream(conn.getInputStream());
@@ -104,13 +105,13 @@ public class ImagesDownloader extends Task<Void> {
             fos.close();
             is.close();
             conn.disconnect();
+            this.massageQueue.add(nameAndUrl[0]);
         } catch (MalformedURLException e) {
             System.out.println("Malformed URL: " + e.getMessage());
-            this.massageQueue.add("9527");
+            this.massageQueue.add("exception");
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
-            this.massageQueue.add("9527");
+            this.massageQueue.add("exception");
         }
-        this.massageQueue.add(nameAndUrl[0]);
     }
 }

@@ -63,8 +63,6 @@ public class ImageForeman extends Task<Void> {
     @Override
     protected Void call() throws Exception {
 
-        System.out.println("debug");//debug
-
         this.totalLines = calculateUrlFilesLines();
         Path imageDirPath = FileSystems.getDefault().getPath(mainDirName,
                                                             projectDirName,
@@ -72,35 +70,24 @@ public class ImageForeman extends Task<Void> {
         if(!Files.exists(imageDirPath))
             Files.createDirectory(imageDirPath);
 
-        System.out.println("debug1");//debug
-
         Path imageSubDirPath;
 
         for(int whichIndex=0; whichIndex<urlFilesName.size(); whichIndex++){
-            System.out.println("debug2");//debug
 
             imageSubDirPath = FileSystems.getDefault().getPath(mainDirName,
                                                                 projectDirName,
                                                                 imageDirName,
                                                                 imageSubDirsName.get(whichIndex));
-            System.out.println("debug3");//debug
             if(!Files.exists(imageSubDirPath))
                 Files.createDirectory(imageSubDirPath);
 
-            System.out.println("debug4");//debug
-
             this.beforeCreateDownloadThreadCount = Thread.activeCount();
 
-            System.out.println("debug5");//debug
-
             readAndPush(whichIndex);
-
-            System.out.println("debug6");//debug
 
             downloadThreadJoin(whichIndex);
 
             if(isCancelled()){
-                updateMessage("Canceled");
                 Path projectImageDirPath = FileSystems.getDefault().getPath(mainDirName,
                                                                             projectDirName,
                                                                             imageDirName);
@@ -139,9 +126,11 @@ public class ImageForeman extends Task<Void> {
                         Thread.sleep(500);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
+
                     }
                 }
                 if(isCancelled()){
+                    updateMessage("Wait sub-threads to shutdown.");
                     break;
                 }
             }
@@ -156,7 +145,7 @@ public class ImageForeman extends Task<Void> {
         if(!massageQueue.isEmpty()){
             String massage = massageQueue.poll();
             updateProgress(this.countLines++, this.totalLines);
-            if(!massage.equals("9527")){
+            if(!massage.equals("exception")){
                 countRealDownloads++;
                 updateMessage(massage + " download.( " + countLines + " / " + totalLines + " )[ " + countRealDownloads + " ]");
             }
@@ -187,6 +176,9 @@ public class ImageForeman extends Task<Void> {
                 Thread.sleep(200);
             } catch (InterruptedException e) {
                 e.printStackTrace();
+            }
+            if(isCancelled()){
+                break;
             }
             updateUIMassage(whichIndex);
         }

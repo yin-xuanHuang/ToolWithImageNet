@@ -398,6 +398,17 @@ public class Controller {
                 progressBar.progressProperty().unbind();
                 progressBarLabel.textProperty().unbind();
                 progressBarLabel.setText("SubProject(create url files) get done.");
+                progressBar.setProgress(-1);
+            });
+
+            urlMatcher.setOnCancelled(e -> {
+                progressBar.progressProperty().unbind();
+                progressBarLabel.textProperty().unbind();
+                stepTwoRun.setDisable(false);
+                stepTwoCancel.setDisable(true);
+                stepTwoRemove.setDisable(true);
+                progressBarLabel.setText("Cancel the action.");
+                progressBar.setProgress(-1);
             });
 
             progressBar.progressProperty().bind(urlMatcher.progressProperty());
@@ -410,12 +421,7 @@ public class Controller {
 
         } else if(((Button)actionEvent.getSource()).getId().equals("stepTwoCancel")){
             urlMatcher.cancel();
-            progressBar.progressProperty().unbind();
-            progressBarLabel.textProperty().unbind();
-            stepTwoRun.setDisable(false);
-            stepTwoCancel.setDisable(true);
-            stepTwoRemove.setDisable(true);
-            progressBarLabel.setText("Cancel the action.");
+
         } else {
             Path projectUrlDirPath = FileSystems.getDefault().getPath(mainDirName,
                                                                 directoryLabel.getText(),
@@ -447,10 +453,24 @@ public class Controller {
                 stepThreeCancel.setDisable(true);
                 stepThreeRemove.setDisable(false);
                 stepFourRun.setDisable(false);
+                stepOneButton.setDisable(false);
                 progressBar.progressProperty().unbind();
                 progressBarLabel.textProperty().unbind();
                 progressBarLabel.setText("SubProject(download image files) get done.");
+                progressBar.setProgress(-1);
             });
+
+            imageForeman.setOnCancelled(e -> {
+                stepThreeRun.setDisable(false);
+                stepThreeCancel.setDisable(true);
+                stepThreeRemove.setDisable(true);
+                stepOneButton.setDisable(false);
+                progressBar.progressProperty().unbind();
+                progressBarLabel.textProperty().unbind();
+                progressBarLabel.setText("Cancel finished.");
+                progressBar.setProgress(-1);
+            });
+
 
             progressBar.progressProperty().bind(imageForeman.progressProperty());
             progressBarLabel.textProperty().bind(imageForeman.messageProperty());
@@ -462,23 +482,14 @@ public class Controller {
 
         } else if(((Button)actionEvent.getSource()).getId().equals("stepThreeCancel")){
             imageForeman.cancel();
-            progressBar.progressProperty().unbind();
-            progressBarLabel.textProperty().unbind();
-            stepThreeRun.setDisable(false);
-            stepThreeCancel.setDisable(true);
-            stepThreeRemove.setDisable(true);
-            progressBarLabel.setText("Cancel the action.");
         } else {
             Path projectImageDirPath = FileSystems.getDefault().getPath(mainDirName,
                                                                     directoryLabel.getText(),
                                                                     imageDirName);
-            try{
-                Files.deleteIfExists(projectImageDirPath);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            deleteDirectory(projectImageDirPath.toFile());
             stepThreeRun.setDisable(false);
             stepThreeRemove.setDisable(true);
+            stepOneButton.setDisable(false);
         }
 
     }
@@ -543,6 +554,16 @@ public class Controller {
 
         stepSixRun.setDisable(true);
 
+    }
+
+    private boolean deleteDirectory(File directoryToBeDeleted) {
+        File[] allContents = directoryToBeDeleted.listFiles();
+        if (allContents != null) {
+            for (File file : allContents) {
+                deleteDirectory(file);
+            }
+        }
+        return directoryToBeDeleted.delete();
     }
 
 }
