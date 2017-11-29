@@ -141,13 +141,14 @@ public class ImageForeman extends Task<Void> {
     }
 
     private void updateUIMassage(int whichIndex) {
-//        synchronized?
+
         if(!massageQueue.isEmpty()){
             String massage = massageQueue.poll();
-            updateProgress(this.countLines++, this.totalLines);
-            if(!massage.equals("exception")){
+            if(!massage.equals("start downloading")){
                 countRealDownloads++;
-                updateMessage(massage + " download.( " + countLines + " / " + totalLines + " )[ " + countRealDownloads + " ]");
+                updateMessage(massage + " download. ( " + countLines + " / " + totalLines + " )[ " + countRealDownloads + " ]");
+            } else {
+                updateProgress(this.countLines++, this.totalLines);
             }
         }
 

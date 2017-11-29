@@ -5,6 +5,9 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+
+import javax.activation.MimeType;
+import javax.activation.MimetypesFileTypeMap;
 import java.awt.Desktop;
 import java.net.*;
 
@@ -16,6 +19,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,6 +42,7 @@ public class Controller {
     private DoWork task;
     private UrlMatcher urlMatcher;
     private ImageForeman imageForeman;
+    private CleanImages cleanImages;
 
     @FXML
     private TextField stepOneTextField;
@@ -54,7 +59,7 @@ public class Controller {
     private Button stepOneButton,
             stepTwoRun, stepTwoRemove,stepTwoCancel,
             stepThreeRun, stepThreeRemove, stepThreeCancel,
-            stepFourRun, stepFourRerun,
+            stepFourRun, stepFourRemove, stepFourCancel,
             stepFiveRun, stepFiveRerun,
             stepSixRun, stepSixRerun;
 
@@ -442,13 +447,13 @@ public class Controller {
         if(((Button)actionEvent.getSource()).getId().equals("stepThreeRun")) {
             disableAllButton();
             imageForeman = new ImageForeman(mainDirName,
-                                                        directoryLabel.getText(),
-                                                        imageDirName,
-                                                        imageMatchedDirName,
-                                                        imageUnmatchedDirName,
-                                                        urlDirName,
-                                                        urlMatchFileName,
-                                                        urlUnmatchFileName);
+                                            directoryLabel.getText(),
+                                            imageDirName,
+                                            imageMatchedDirName,
+                                            imageUnmatchedDirName,
+                                            urlDirName,
+                                            urlMatchFileName,
+                                            urlUnmatchFileName);
             imageForeman.setOnSucceeded(e -> {
                 stepThreeCancel.setDisable(true);
                 stepThreeRemove.setDisable(false);
@@ -496,6 +501,57 @@ public class Controller {
 
     @FXML
     public void stepFourRunAction(ActionEvent actionEvent) {
+        // walk file tree
+        // FileVisitor interface
+        if(((Button)actionEvent.getSource()).getId().equals("stepFourRun")) {
+            disableAllButton();
+            cleanImages = new CleanImages(mainDirName,
+                                        directoryLabel.getText(),
+                                        imageDirName,
+                                        imageMatchedDirName,
+                                        imageUnmatchedDirName);
+
+            cleanImages.setOnSucceeded(e -> {
+                stepFourCancel.setDisable(true);
+                stepFourRemove.setDisable(false);
+                stepFiveRun.setDisable(false);
+                stepOneButton.setDisable(false);
+                progressBar.progressProperty().unbind();
+                progressBarLabel.textProperty().unbind();
+                progressBarLabel.setText("SubProject(clean image files) get done.");
+                progressBar.setProgress(-1);
+            });
+
+            cleanImages.setOnCancelled(e -> {
+                stepFourRun.setDisable(false);
+                stepFourCancel.setDisable(true);
+                stepFourRemove.setDisable(true);
+                stepOneButton.setDisable(false);
+                progressBar.progressProperty().unbind();
+                progressBarLabel.textProperty().unbind();
+                progressBarLabel.setText("Cancel finished.");
+                progressBar.setProgress(-1);
+            });
+
+
+            progressBar.progressProperty().bind(cleanImages.progressProperty());
+            progressBarLabel.textProperty().bind(cleanImages.messageProperty());
+
+            new Thread(cleanImages).start();
+            System.out.println("CleanImage thread start");//debug
+            stepFourRun.setDisable(true);
+            stepFourCancel.setDisable(false);
+
+        }else if(((Button)actionEvent.getSource()).getId().equals("stepFourCancel")){
+            cleanImages.cancel();
+        } else {
+            Path projectImageDirPath = FileSystems.getDefault().getPath(mainDirName,
+                                                                        directoryLabel.getText(),
+                                                                        imageDirName);
+            deleteDirectory(projectImageDirPath.toFile());
+            stepFourRun.setDisable(false);
+            stepFourRemove.setDisable(true);
+        }
 
     }
 
@@ -549,6 +605,8 @@ public class Controller {
         stepThreeRemove.setDisable(true);
         stepThreeCancel.setDisable(true);
         stepFourRun.setDisable(true);
+        stepFourRemove.setDisable(true);
+        stepFourCancel.setDisable(true);
 
         stepFiveRun.setDisable(true);
 
