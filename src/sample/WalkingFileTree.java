@@ -19,17 +19,11 @@ public class WalkingFileTree extends SimpleFileVisitor<Path> {
     private final String wrongImageDirName = "wrong_images";
     private Path wrongImageDirPath;
     private File[] wrongImageList;
-    private FileVisitResult fileVisitResult;
 
     public WalkingFileTree(Queue<String> shareQueue) {
         wrongImageDirPath = FileSystems.getDefault().getPath(wrongImageDirName);
         wrongImageList = wrongImageDirPath.toFile().listFiles();
         this.shareQueue = shareQueue;
-        fileVisitResult = FileVisitResult.CONTINUE;
-    }
-
-    public void stop() {
-        fileVisitResult = FileVisitResult.TERMINATE;
     }
 
     @Override
@@ -68,23 +62,28 @@ public class WalkingFileTree extends SimpleFileVisitor<Path> {
 
         shareQueue.add("total");
 
-        return fileVisitResult;
+        return FileVisitResult.CONTINUE;
     }
 
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
         System.out.println(dir.toAbsolutePath());
-        return fileVisitResult;
+        return FileVisitResult.CONTINUE;
     }
 
     @Override
     public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
         System.out.println("Error accessing file: " + file.toAbsolutePath() + " " + exc.getMessage());
         System.out.println("===================================");
-        return fileVisitResult;
+        return FileVisitResult.CONTINUE;
     }
 
-//    轉檔案格式
+    /**
+     * Convert every image types to jpg type.
+     *
+     * @param in the origin image path.
+     * @param out want to store the converted image path.
+     */
     private void image2jpeg(Path in, Path out) {
         try (InputStream is = new FileInputStream(in.toFile())) {
             ImageInputStream iis = ImageIO.createImageInputStream(is);
@@ -129,9 +128,14 @@ public class WalkingFileTree extends SimpleFileVisitor<Path> {
         return true;
     }
 
-
-//    效能有點低
-//    用 compareImages() 來比對每一個wrong image
+    /**
+     * Looping all wrong images to compareImages() the beCheckedPath image.
+     *
+     * TODO 效能有點低
+     *
+     * @param beCheckedPath be checked image path.
+     * @return whether the image is matching with wrong images or not.
+     */
     private boolean isMissingImage(Path beCheckedPath) {
 
         try (InputStream beCheckedIS = new FileInputStream(beCheckedPath.toFile())) {
@@ -163,10 +167,5 @@ public class WalkingFileTree extends SimpleFileVisitor<Path> {
         }
 
         return false;
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
     }
 }

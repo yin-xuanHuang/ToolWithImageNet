@@ -54,6 +54,10 @@ public class ImagesDownloader extends Task<Void> {
         return null;
     }
 
+    /**
+     * Poll data from the queue, and parsing it, and deal with it by downloadFiles() function.
+     *
+     */
     private void pollAndDownload() {
         String line;
         String[] nameAndUrl;
@@ -74,6 +78,12 @@ public class ImagesDownloader extends Task<Void> {
         }
     }
 
+    /**
+     * Connecting to image, and download it.
+     *
+     * @param nameAndUrl data of the file name and the url of the image
+     */
+
     private void downloadFiles(String[] nameAndUrl) {
 
         try {
@@ -92,9 +102,9 @@ public class ImagesDownloader extends Task<Void> {
             conn.setConnectTimeout(7000);
             conn.setReadTimeout(7000);
 
+            // checking whether or not it is a image file type
             String type = conn.getContentType().split("/")[0];
             if(!type.equals("image")){
-//                this.massageQueue.add("exception");
                 conn.disconnect();
                 return;
             }
@@ -117,13 +127,12 @@ public class ImagesDownloader extends Task<Void> {
             fos.close();
             is.close();
             conn.disconnect();
+            // downloading success
             this.massageQueue.add(nameAndUrl[0]);
         } catch (MalformedURLException e) {
             System.out.println("Malformed URL: " + e.getMessage());
-//            this.massageQueue.add("exception");
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
-//            this.massageQueue.add("exception");
         }
     }
 }

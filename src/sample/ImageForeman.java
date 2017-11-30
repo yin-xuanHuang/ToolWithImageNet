@@ -60,6 +60,19 @@ public class ImageForeman extends Task<Void> {
 
     }
 
+    /**
+     * Step 1: count every file's line to set progressBar total number in the project's directory.
+     *
+     * Step -: read url line from files in the project url directory and push it to the queue.
+     *
+     * Step -: determining whether or not create downloading thread.
+     *
+     * Step -: waiting the short-term goal to finished
+     *
+     * @return
+     * @throws Exception
+     */
+
     @Override
     protected Void call() throws Exception {
 
@@ -85,7 +98,7 @@ public class ImageForeman extends Task<Void> {
 
             readAndPush(whichIndex);
 
-            downloadThreadJoin(whichIndex);
+            downloadThreadJoin();
 
             if(isCancelled()){
                 Path projectImageDirPath = FileSystems.getDefault().getPath(mainDirName,
@@ -99,6 +112,13 @@ public class ImageForeman extends Task<Void> {
         return null;
     }
 
+    /**
+     * Read lines from the project's url file, and push them to queue,
+     *
+     * and determining whether to create a new downloading thread to help or not.
+     *
+     * @param whichIndex choose url file to read.
+     */
     private void readAndPush(int whichIndex) {
 
         Path urlFilePath = FileSystems.getDefault().getPath(mainDirName,
@@ -115,14 +135,13 @@ public class ImageForeman extends Task<Void> {
                 if(urlQueue.size() < MAX_URLS_IN_QUEUE) {
                     urlQueue.add(input);
 
-                    updateUIMassage(whichIndex);
+                    updateUIMassage();
 
                 } else {
 //                    建立下載執行緒
                     createImageDownloader(whichIndex);
 
                     try {
-                        //TODO
                         Thread.sleep(500);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -140,7 +159,11 @@ public class ImageForeman extends Task<Void> {
         }
     }
 
-    private void updateUIMassage(int whichIndex) {
+    /**
+     * Update progressBar and label messages.
+     *
+     */
+    private void updateUIMassage() {
 
         if(!massageQueue.isEmpty()){
             String massage = massageQueue.poll();
@@ -154,6 +177,11 @@ public class ImageForeman extends Task<Void> {
 
     }
 
+    /**
+     * determining whether or not to create a new downloading thread.
+     *
+     * @param whichIndex choose sub-directory where the downloading image to located.
+     */
     private void createImageDownloader(int whichIndex) {
 
         if(Thread.activeCount() < MAX_CURRENT_THREADS) {
@@ -170,7 +198,11 @@ public class ImageForeman extends Task<Void> {
         }
     }
 
-    private void downloadThreadJoin(int whichIndex) {
+    /**
+     * Waiting the short-term goal(download images) to be done.
+     *
+     */
+    private void downloadThreadJoin() {
 
         while(Thread.activeCount() > beforeCreateDownloadThreadCount){
             try{
@@ -181,10 +213,15 @@ public class ImageForeman extends Task<Void> {
             if(isCancelled()){
                 break;
             }
-            updateUIMassage(whichIndex);
+            updateUIMassage();
         }
     }
 
+    /**
+     * Count(use countLines() function) every file's total lines in the project's url directory
+     *
+     * @return the sum of total lines in every url file in project's url directory
+     */
     private long calculateUrlFilesLines() {
 
         long totalLines = 0;
@@ -206,7 +243,13 @@ public class ImageForeman extends Task<Void> {
         return totalLines;
     }
 
-    //    計算檔案內容有集個換行字元
+    /**
+     * Counting file's lines by new line character
+     *
+     * @param filename the file to be counted
+     * @return the number of total lines
+     * @throws IOException
+     */
     private static long countLines(String filename) throws IOException {
         InputStream is = new BufferedInputStream(new FileInputStream(filename));
         try {
@@ -228,6 +271,12 @@ public class ImageForeman extends Task<Void> {
         }
     }
 
+    /**
+     * Delete the directory recursively.
+     *
+     * @param directoryToBeDeleted the directory wanted to delete.
+     * @return whether it is success or not.
+     */
     private boolean deleteDirectory(File directoryToBeDeleted) {
         File[] allContents = directoryToBeDeleted.listFiles();
         if (allContents != null) {

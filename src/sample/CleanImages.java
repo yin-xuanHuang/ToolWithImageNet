@@ -73,6 +73,11 @@ public class CleanImages extends Task<Void> {
         return null;
     }
 
+    /**
+     * Count the project's images amount in its image directory
+     *
+     * @return total files in the project's image directory
+     */
     private long getTotalFiles() {
 
         long totalFiles = 0;
@@ -86,6 +91,11 @@ public class CleanImages extends Task<Void> {
         return totalFiles;
     }
 
+    /**
+     * Update progressBar and label messages.
+     *
+     * @return whether walkingFileTree is done or not.
+     */
     private boolean updateUIMassage() {
 
         if(!shareQueue.isEmpty()){

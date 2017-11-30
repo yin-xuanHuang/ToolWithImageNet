@@ -14,7 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 
-public class DoWork extends Task<Void> {
+public class GetResources extends Task<Void> {
 
     private final ArrayList<String> urllist = new ArrayList<>();
     private final ArrayList<String> fileNameList = new ArrayList<>();
@@ -31,7 +31,7 @@ public class DoWork extends Task<Void> {
     private BufferedInputStream is;
     private FileOutputStream fos;
 
-    public DoWork() {
+    public GetResources() {
         updateMessage("Download thread is creating ...");
 
         urllist.add("http://image-net.org/archive/words.txt");
@@ -55,6 +55,10 @@ public class DoWork extends Task<Void> {
         return null;
     }
 
+    /**
+     * decompress the download files.
+     *
+     */
     private void decompressFiles() {
         for(int i=1;i<5;i++) {
             try {
@@ -115,6 +119,10 @@ public class DoWork extends Task<Void> {
         }
     }
 
+    /**
+     * Connecting to files, and download them.
+     *
+     */
     private void downloadFiles() {
         Path wantToStoreFile;
         int i;

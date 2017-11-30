@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class UrlMatcher extends Task<Void> {
+public class WnidMatcher extends Task<Void> {
 
     private ArrayList<String> wnidList;
     private ArrayList<String> urlFilesName;
@@ -23,13 +23,13 @@ public class UrlMatcher extends Task<Void> {
 //    private final int chooseUrl0Max = 1000;
 
 
-    public UrlMatcher(String mainDirName,
-                      String resourceDirName,
-                      String projectDirName,
-                      String urlDirName,
-                      String urlMatchFileName,
-                      String urlUnmatchFileName,
-                      ArrayList<String> wnidList) {
+    public WnidMatcher(String mainDirName,
+                       String resourceDirName,
+                       String projectDirName,
+                       String urlDirName,
+                       String urlMatchFileName,
+                       String urlUnmatchFileName,
+                       ArrayList<String> wnidList) {
 
         this.mainDirName = mainDirName;
         this.resourceDirName = resourceDirName;
@@ -51,6 +51,19 @@ public class UrlMatcher extends Task<Void> {
 
     }
 
+    /**
+     * Step 1: count every file's line to set progressBar total number in the resource directory.
+     *
+     * Step 2: create url directory and url files in the project's directory.
+     *
+     * Step -: reading url files in resource to compare to the project's wnid file.
+     *
+     * Step -: store both matched or un-matched url line list to project's url files.
+     *
+     *
+     * @return
+     * @throws Exception
+     */
 
     @Override
     protected Void call() throws Exception {
@@ -151,6 +164,13 @@ public class UrlMatcher extends Task<Void> {
         return null;
     }
 
+    /**
+     * Writing(append) chosen data to a file
+     *
+     * @param urlList the data list be chosen to write to a file
+     * @param isMatched writing to matching file or writing to un-matching file
+     */
+
     private void writeUrlToFile(ArrayList<String> urlList, boolean isMatched) {
 
         String whichUrlFileName;
@@ -185,16 +205,24 @@ public class UrlMatcher extends Task<Void> {
 
     }
 
-
-    private boolean isContainsWnidList(String string) {
+    /**
+     * Checking the wnid whether in wnid list or not.
+     *
+     * @param wnid the wnid which want to be checked.
+     * @return whether the string is contained in the wnid list.
+     */
+    private boolean isContainsWnidList(String wnid) {
         for(String s: wnidList) {
-            if(string.contains(s)) {
+            if(wnid.contains(s)) {
                 return true;
             }
         }
         return false;
     }
 
+    /**
+     * Count(use countLines() function) every file's total lines in the resource directory's url files
+     */
     private void calculateUrlFilesLines() {
         for(String urlFileName: urlFilesName) {
             Path urlFilePath = FileSystems.getDefault().getPath(mainDirName,
@@ -210,7 +238,13 @@ public class UrlMatcher extends Task<Void> {
         }
     }
 
-    //    計算檔案內容有集個換行字元
+    /**
+     * Counting file's lines by new line character
+     *
+     * @param filename the file to be counted
+     * @return the number of total lines
+     * @throws IOException
+     */
     private static int countLines(String filename) throws IOException {
         InputStream is = new BufferedInputStream(new FileInputStream(filename));
         try {

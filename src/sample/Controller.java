@@ -6,8 +6,6 @@ import javafx.scene.control.*;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
-import javax.activation.MimeType;
-import javax.activation.MimetypesFileTypeMap;
 import java.awt.Desktop;
 import java.net.*;
 
@@ -19,7 +17,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,8 +36,8 @@ public class Controller {
     private final String imageMatchedDirName = "image1";
     private final String imageUnmatchedDirName = "image0";
 
-    private DoWork task;
-    private UrlMatcher urlMatcher;
+    private GetResources task;
+    private WnidMatcher wnidMatcher;
     private ImageForeman imageForeman;
     private CleanImages cleanImages;
 
@@ -264,7 +261,7 @@ public class Controller {
         if(((Button)actionEvent.getSource()).getId().equals("stepOneAutoDownloadButton")){
             System.out.println("auto-download be clicked.");//debug
 //            下載任務執行緒
-            task = new DoWork();
+            task = new GetResources();
             progressBar.progressProperty().bind(task.progressProperty());
             progressBarLabel.textProperty().bind(task.messageProperty());
 
@@ -388,7 +385,7 @@ public class Controller {
                 System.out.println(s);
             }*/
 
-            urlMatcher = new UrlMatcher(mainDirName,
+            wnidMatcher = new WnidMatcher(mainDirName,
                                                 resourceDirName,
                                                 directoryLabel.getText(),
                                                 urlDirName,
@@ -396,7 +393,7 @@ public class Controller {
                                                 urlUnmatchFileName,
                                                 wnidList);
 
-            urlMatcher.setOnSucceeded(e -> {
+            wnidMatcher.setOnSucceeded(e -> {
                 stepTwoCancel.setDisable(true);
                 stepTwoRemove.setDisable(false);
                 stepThreeRun.setDisable(false);
@@ -406,7 +403,7 @@ public class Controller {
                 progressBar.setProgress(-1);
             });
 
-            urlMatcher.setOnCancelled(e -> {
+            wnidMatcher.setOnCancelled(e -> {
                 progressBar.progressProperty().unbind();
                 progressBarLabel.textProperty().unbind();
                 stepTwoRun.setDisable(false);
@@ -416,16 +413,16 @@ public class Controller {
                 progressBar.setProgress(-1);
             });
 
-            progressBar.progressProperty().bind(urlMatcher.progressProperty());
-            progressBarLabel.textProperty().bind(urlMatcher.messageProperty());
+            progressBar.progressProperty().bind(wnidMatcher.progressProperty());
+            progressBarLabel.textProperty().bind(wnidMatcher.messageProperty());
 
-            new Thread(urlMatcher).start();
+            new Thread(wnidMatcher).start();
             System.out.println("urlMatcher thread start");//debug
             stepTwoRun.setDisable(true);
             stepTwoCancel.setDisable(false);
 
         } else if(((Button)actionEvent.getSource()).getId().equals("stepTwoCancel")){
-            urlMatcher.cancel();
+            wnidMatcher.cancel();
 
         } else {
             Path projectUrlDirPath = FileSystems.getDefault().getPath(mainDirName,
