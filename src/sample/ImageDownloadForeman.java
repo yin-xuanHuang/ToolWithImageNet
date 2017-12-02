@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Queue;
 
 
-public class ImageForeman extends Task<Void> {
+public class ImageDownloadForeman extends Task<Void> {
 
     private final Queue<String> urlQueue;
     private final Queue<String> massageQueue;
@@ -31,14 +31,14 @@ public class ImageForeman extends Task<Void> {
     private long totalLines;
     private int beforeCreateDownloadThreadCount;
 
-    public ImageForeman(String mainDirName,
-                        String projectDirName,
-                        String imageDirName,
-                        String imageMatchedDirName,
-                        String imageUnMatchedDirName,
-                        String urlDirName,
-                        String urlMatchedFileName,
-                        String urlUnmatchedFileName) {
+    public ImageDownloadForeman(String mainDirName,
+                                String projectDirName,
+                                String imageDirName,
+                                String imageMatchedDirName,
+                                String imageUnMatchedDirName,
+                                String urlDirName,
+                                String urlMatchedFileName,
+                                String urlUnmatchedFileName) {
 
         this.urlQueue = new ArrayDeque<>();
         this.massageQueue = new ArrayDeque<>();
@@ -142,7 +142,7 @@ public class ImageForeman extends Task<Void> {
                     createImageDownloader(whichIndex);
 
                     try {
-                        Thread.sleep(500);
+                        Thread.sleep(200);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
 
@@ -206,7 +206,7 @@ public class ImageForeman extends Task<Void> {
 
         while(Thread.activeCount() > beforeCreateDownloadThreadCount){
             try{
-                Thread.sleep(200);
+                Thread.sleep(100);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

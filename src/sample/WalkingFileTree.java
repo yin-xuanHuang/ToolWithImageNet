@@ -7,23 +7,33 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.Queue;
 
 
 public class WalkingFileTree extends SimpleFileVisitor<Path> {
 
-//    轉檔成一致的圖檔(ex. jpg)
-//    identify(remove missing image)
-
     private Queue<String> shareQueue;
-    private final String wrongImageDirName = "wrong_images";
-    private Path wrongImageDirPath;
-    private File[] wrongImageList;
+
+    private final String wrongImageSignatureFileName = "wrongImageSignature.txt";
+    private ArrayList<String> wrongImageSignatures;
 
     public WalkingFileTree(Queue<String> shareQueue) {
-        wrongImageDirPath = FileSystems.getDefault().getPath(wrongImageDirName);
-        wrongImageList = wrongImageDirPath.toFile().listFiles();
+
         this.shareQueue = shareQueue;
+
+        wrongImageSignatures = new ArrayList<>();
+        try(BufferedReader file = new BufferedReader(new FileReader(wrongImageSignatureFileName))) {
+            String input;
+            while((input = file.readLine()) != null) {
+                wrongImageSignatures.add(input);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override
@@ -43,15 +53,11 @@ public class WalkingFileTree extends SimpleFileVisitor<Path> {
         Files.delete(file);
 
 
-//        check isMissingImage()
-//        list wrong image directory's file and compare to out jpg file.
-
         Boolean isWrongImage = false;
-
-        if(wrongImageList != null) {
+        if(wrongImageSignatures.size() > 0) {
             isWrongImage = isMissingImage(out);
-        } else {
-            System.out.println("No wrong image in " + wrongImageDirName + " directory!");
+        }else {
+            System.out.println("No wrong image signature in " + wrongImageSignatureFileName + " file!");
         }
 
         if(isWrongImage) {
@@ -100,72 +106,52 @@ public class WalkingFileTree extends SimpleFileVisitor<Path> {
     }
 
     /**
-     * Compares two images pixel by pixel.
-     *
-     * @param imgA the first image.
-     * @param imgB the second image.
-     * @return whether the images are both the same or not.
-     */
-    private boolean compareImages(BufferedImage imgA, BufferedImage imgB) {
-        // The images must be the same size.
-        if (imgA.getWidth() == imgB.getWidth() && imgA.getHeight() == imgB.getHeight()) {
-            int width = imgA.getWidth();
-            int height = imgA.getHeight();
-
-            // Loop over every pixel.
-            for (int y = 0; y < height; y++) {
-                for (int x = 0; x < width; x++) {
-                    // Compare the pixels for equality.
-                    if (imgA.getRGB(x, y) != imgB.getRGB(x, y)) {
-                        return false;
-                    }
-                }
-            }
-        } else {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Looping all wrong images to compareImages() the beCheckedPath image.
-     *
-     * TODO 效能有點低
+     * Looping all wrong image's signatures to compare the beCheckedPath image's signature.
      *
      * @param beCheckedPath be checked image path.
      * @return whether the image is matching with wrong images or not.
      */
     private boolean isMissingImage(Path beCheckedPath) {
 
-        try (InputStream beCheckedIS = new FileInputStream(beCheckedPath.toFile())) {
-            ImageInputStream beCheckedIIS = ImageIO.createImageInputStream(beCheckedIS);
-            BufferedImage beCheckedBI = ImageIO.read(beCheckedIIS);
+        //in linux ubuntu
+        String command = "identify -format \"%#\" " + beCheckedPath.toString();
 
-            for(File wrongImage: wrongImageList) {
-                try (InputStream wrongImageIS = new FileInputStream(wrongImage)) {
-                    ImageInputStream wrongImageIIS  = ImageIO.createImageInputStream(wrongImageIS);
-                    BufferedImage wrongImageBI = ImageIO.read(wrongImageIIS);
+        String signature = executeCommand(command);
 
-                    if(compareImages(beCheckedBI, wrongImageBI)) {
-                        return true;
-                    }
-
-                } catch (Exception exp) {
-                    exp.printStackTrace();
-                }
-            }
-        } catch (Exception exp) {
-            exp.printStackTrace();
-            try {
-                Files.delete(beCheckedPath);
+        for(String wrongImageSignature: wrongImageSignatures) {
+            if(wrongImageSignature.equals(signature)){
                 return true;
-            } catch (IOException e) {
-                e.printStackTrace();
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Execute command line, and return result message
+     *
+     * @param command command line want to be executed
+     * @return result message
+     */
+    private String executeCommand(String command) {
+
+        StringBuffer output = new StringBuffer();
+
+        Process p;
+        try {
+            p = Runtime.getRuntime().exec(command);
+            p.waitFor();
+            BufferedReader reader =
+                    new BufferedReader(new InputStreamReader(p.getInputStream()));
+
+            String line = "";
+            while ((line = reader.readLine())!= null) {
+                output.append(line);
             }
 
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        return false;
+        return output.toString();
     }
 }

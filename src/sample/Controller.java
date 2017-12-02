@@ -1,5 +1,6 @@
 package sample;
 
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -26,6 +27,7 @@ public class Controller {
     private final String mainDirName = "machineLearningWithImageNetDir";
     private final String resourceDirName = "resourceDir";
     private final String wordsTextName = "words.txt";
+
     private final String projectWnidTextName = "wnid.txt";
 
     private final String urlDirName = "urlCollection";
@@ -36,9 +38,13 @@ public class Controller {
     private final String imageMatchedDirName = "image1";
     private final String imageUnmatchedDirName = "image0";
 
+    private final String cleanDirName = "cleanData";
+
+    private final String wrongImageSignatureFileName = "wrongImageSignature.txt";
+
     private GetResources task;
     private WnidMatcher wnidMatcher;
-    private ImageForeman imageForeman;
+    private ImageDownloadForeman imageDownloadForeman;
     private CleanImages cleanImages;
 
     @FXML
@@ -48,17 +54,15 @@ public class Controller {
     private Label stepOneLabel, directoryLabel, progressBarLabel;
 
     @FXML
-    private Button openDirectoryButton,
-            setpOneCancelButton,
-            stepOneAutoDownloadButton;
+    private Button openDirectoryButton;
 
     @FXML
-    private Button stepOneButton,
-            stepTwoRun, stepTwoRemove,stepTwoCancel,
-            stepThreeRun, stepThreeRemove, stepThreeCancel,
-            stepFourRun, stepFourRemove, stepFourCancel,
-            stepFiveRun, stepFiveRerun,
-            stepSixRun, stepSixRerun;
+    private Button stepOneButton, stepOneAutoDownloadButton, stepOneCancel,
+                   stepTwoRun,    stepTwoRemove,             stepTwoCancel,
+                   stepThreeRun,  stepThreeRemove,           stepThreeCancel,
+                   stepFourRun,   stepFourRemove,            stepFourCancel,
+                   stepFiveRun,   stepFiveRemove,            stepFiveCancel,
+                   stepSixRun,    stepSixRemove,             stepSixCancel;
 
     @FXML
     private ProgressBar progressBar;
@@ -267,7 +271,7 @@ public class Controller {
 
             task.setOnSucceeded(e -> {
                 stepOneButton.setDisable(false);
-                setpOneCancelButton.setDisable(true);
+                stepOneCancel.setDisable(true);
                 openDirectoryButton.setDisable(false);
                 progressBar.progressProperty().unbind();
                 progressBarLabel.textProperty().unbind();
@@ -276,12 +280,12 @@ public class Controller {
 
             new Thread(task).start();
             System.out.println("auto-download thread start");//debug
-            setpOneCancelButton.setDisable(false);
+            stepOneCancel.setDisable(false);
             stepOneAutoDownloadButton.setDisable(true);
 
         } else {
             task.cancel();
-            setpOneCancelButton.setDisable(true);
+            stepOneCancel.setDisable(true);
             stepOneAutoDownloadButton.setDisable(false);
         }
     }
@@ -325,7 +329,7 @@ public class Controller {
         ArrayList<String> subProjectsName = new ArrayList<>();
         subProjectsName.add(urlDirName);
         subProjectsName.add(imageDirName);
-        subProjectsName.add("cleanImage");
+        subProjectsName.add(cleanDirName);//TODO how to determine.
         subProjectsName.add("hdf5");
         subProjectsName.add("parameters");
 
@@ -443,7 +447,7 @@ public class Controller {
 
         if(((Button)actionEvent.getSource()).getId().equals("stepThreeRun")) {
             disableAllButton();
-            imageForeman = new ImageForeman(mainDirName,
+            imageDownloadForeman = new ImageDownloadForeman(mainDirName,
                                             directoryLabel.getText(),
                                             imageDirName,
                                             imageMatchedDirName,
@@ -451,7 +455,7 @@ public class Controller {
                                             urlDirName,
                                             urlMatchFileName,
                                             urlUnmatchFileName);
-            imageForeman.setOnSucceeded(e -> {
+            imageDownloadForeman.setOnSucceeded(e -> {
                 stepThreeCancel.setDisable(true);
                 stepThreeRemove.setDisable(false);
                 stepFourRun.setDisable(false);
@@ -462,7 +466,7 @@ public class Controller {
                 progressBar.setProgress(-1);
             });
 
-            imageForeman.setOnCancelled(e -> {
+            imageDownloadForeman.setOnCancelled(e -> {
                 stepThreeRun.setDisable(false);
                 stepThreeCancel.setDisable(true);
                 stepThreeRemove.setDisable(true);
@@ -474,16 +478,16 @@ public class Controller {
             });
 
 
-            progressBar.progressProperty().bind(imageForeman.progressProperty());
-            progressBarLabel.textProperty().bind(imageForeman.messageProperty());
+            progressBar.progressProperty().bind(imageDownloadForeman.progressProperty());
+            progressBarLabel.textProperty().bind(imageDownloadForeman.messageProperty());
 
-            new Thread(imageForeman).start();
+            new Thread(imageDownloadForeman).start();
             System.out.println("ImageForeman thread start");//debug
             stepThreeRun.setDisable(true);
             stepThreeCancel.setDisable(false);
 
         } else if(((Button)actionEvent.getSource()).getId().equals("stepThreeCancel")){
-            imageForeman.cancel();
+            imageDownloadForeman.cancel();
         } else {
             Path projectImageDirPath = FileSystems.getDefault().getPath(mainDirName,
                                                                     directoryLabel.getText(),
@@ -506,7 +510,8 @@ public class Controller {
                                         directoryLabel.getText(),
                                         imageDirName,
                                         imageMatchedDirName,
-                                        imageUnmatchedDirName);
+                                        imageUnmatchedDirName,
+                                        cleanDirName);
 
             cleanImages.setOnSucceeded(e -> {
                 stepFourCancel.setDisable(true);
@@ -564,7 +569,12 @@ public class Controller {
 
 
 
-//    字元辨識
+    /**
+     * Check whether or not every character is alpha in the string
+     *
+     * @param name be checked by each character
+     * @return whether or not the string is all alpha.
+     */
     private boolean isAlpha(String name) {
         char[] chars = name.toCharArray();
 
@@ -573,7 +583,6 @@ public class Controller {
                 return false;
             }
         }
-
         return true;
     }
 
@@ -592,7 +601,7 @@ public class Controller {
     @FXML
     private void disableAllButton() {
         openDirectoryButton.setDisable(true);
-        setpOneCancelButton.setDisable(true);
+        stepOneCancel.setDisable(true);
         stepOneAutoDownloadButton.setDisable(true);
         stepOneButton.setDisable(true);
         stepTwoRun.setDisable(true);
@@ -604,13 +613,21 @@ public class Controller {
         stepFourRun.setDisable(true);
         stepFourRemove.setDisable(true);
         stepFourCancel.setDisable(true);
-
         stepFiveRun.setDisable(true);
-
+        stepFiveRemove.setDisable(true);
+        stepFiveCancel.setDisable(true);
         stepSixRun.setDisable(true);
+        stepSixRemove.setDisable(true);
+        stepSixCancel.setDisable(true);
 
     }
 
+    /**
+     * Delete the directory recursively.
+     *
+     * @param directoryToBeDeleted the directory wanted to delete.
+     * @return whether it is success or not.
+     */
     private boolean deleteDirectory(File directoryToBeDeleted) {
         File[] allContents = directoryToBeDeleted.listFiles();
         if (allContents != null) {

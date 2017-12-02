@@ -18,7 +18,7 @@
             <Hyperlink fx:id="stepOneHyperlinkWord" text="words.txt" onAction="#openWebsiteAction"/>
             <Hyperlink fx:id="stepOneHyperlinkUrls" text="4 urlCompress file" onAction="#openWebsiteAction"/>
             <Button fx:id="stepOneAutoDownloadButton" text="Auto-download" onAction="#stepOneDownloadAction" disable="true"/>
-            <Button fx:id="setpOneCancelButton" text="Cancel" onAction="#stepOneDownloadAction" disable="true"/>
+            <Button fx:id="stepOneCancel" text="Cancel" onAction="#stepOneDownloadAction" disable="true"/>
             <Separator/>
             <Label fx:id="directoryLabel" text="No directory be choosed."/>
             <Button fx:id="openDirectoryButton" text="Open project" onAction="#openDirectoryAction" disable="true"/>

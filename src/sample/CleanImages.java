@@ -18,6 +18,7 @@ public class CleanImages extends Task<Void> {
     private Queue<String> shareQueue;
     private final String mainDirName;
     private final String projectDirName;
+    private final String cleanDirName;
 
     private final String imageDirName;
     private final ArrayList<String> imageSubDirsName;
@@ -30,7 +31,8 @@ public class CleanImages extends Task<Void> {
                        String projectDirName,
                        String imageDirName,
                        String imageMatchedDirName,
-                       String imageUnmatchedDirName) {
+                       String imageUnmatchedDirName,
+                       String cleanDirName) {
 
         this.mainDirName = mainDirName;
         this.projectDirName = projectDirName;
@@ -41,6 +43,8 @@ public class CleanImages extends Task<Void> {
         imageSubDirsName.add(imageUnmatchedDirName);
 
         shareQueue = new ArrayDeque<>();
+
+        this.cleanDirName = cleanDirName;
     }
 
     @Override
@@ -63,13 +67,18 @@ public class CleanImages extends Task<Void> {
         }).start();
 
         while(true){
-            Thread.sleep(500);
             if(updateUIMassage())
                 break;
             if(isCancelled()){
                 break;
             }
         }
+
+//        create cleanImageDir
+        Path cleanDirPath = FileSystems.getDefault().getPath(mainDirName, projectDirName, cleanDirName);
+        if(!Files.exists(cleanDirPath))
+            Files.createDirectory(cleanDirPath);
+
         return null;
     }
 
