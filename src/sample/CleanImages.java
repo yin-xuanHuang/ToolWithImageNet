@@ -2,49 +2,28 @@ package sample;
 
 import javafx.concurrent.Task;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Queue;
 
 public class CleanImages extends Task<Void> {
-//    TODO 效能問題
-//    算出共有幾張圖，以此為progressBar total。
 
     private Queue<String> shareQueue;
-    private final String mainDirName;
-    private final String projectDirName;
-    private final String cleanDirName;
-
-    private final String imageDirName;
-    private final ArrayList<String> imageSubDirsName;
+    private ThisResource resource;
 
     private long countFiles = 0;
     private long totalFiles;
     private long countDeleteFiles = 0;
 
-    public CleanImages(String mainDirName,
-                       String projectDirName,
-                       String imageDirName,
-                       String imageMatchedDirName,
-                       String imageUnmatchedDirName,
-                       String cleanDirName) {
+    public CleanImages(ThisResource resource) {
 
-        this.mainDirName = mainDirName;
-        this.projectDirName = projectDirName;
-        this.imageDirName = imageDirName;
+        this.resource = resource;
 
-        imageSubDirsName = new ArrayList<>();
-        imageSubDirsName.add(imageMatchedDirName);
-        imageSubDirsName.add(imageUnmatchedDirName);
 
         shareQueue = new ArrayDeque<>();
 
-        this.cleanDirName = cleanDirName;
     }
 
     @Override
@@ -52,15 +31,18 @@ public class CleanImages extends Task<Void> {
 
         totalFiles = getTotalFiles();
 
-        Path imagePath = FileSystems.getDefault().getPath(mainDirName,
-                                                        projectDirName,
-                                                        imageDirName);
+        Path imagePath = resource.getImageDirPath();
+
+//        create cleanImageDir
+        Path cleanDirPath = resource.getCleanDirPath();
+        if(!Files.exists(cleanDirPath))
+            Files.createDirectory(cleanDirPath);
 
 
         new Thread(() -> {
             try {
 //                這個如何stop?
-                Files.walkFileTree(imagePath, new WalkingFileTree(shareQueue));
+                Files.walkFileTree(imagePath, new WalkingFileTree(shareQueue, resource));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -74,11 +56,6 @@ public class CleanImages extends Task<Void> {
             }
         }
 
-//        create cleanImageDir
-        Path cleanDirPath = FileSystems.getDefault().getPath(mainDirName, projectDirName, cleanDirName);
-        if(!Files.exists(cleanDirPath))
-            Files.createDirectory(cleanDirPath);
-
         return null;
     }
 
@@ -91,11 +68,12 @@ public class CleanImages extends Task<Void> {
 
         long totalFiles = 0;
 
-        Path imageDirPath = FileSystems.getDefault().getPath(mainDirName, projectDirName, imageDirName);
 
-        for(File imageSubDir: imageDirPath.toFile().listFiles()) {
-            totalFiles += imageSubDir.list().length;
-        }
+        Path imageSubDirPath = resource.getImageSubDirPath(0);
+        totalFiles += imageSubDirPath.toFile().list().length;
+
+        imageSubDirPath = resource.getImageSubDirPath(1);
+        totalFiles += imageSubDirPath.toFile().list().length;
 
         return totalFiles;
     }

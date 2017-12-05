@@ -15,15 +15,18 @@ public class WalkingFileTree extends SimpleFileVisitor<Path> {
 
     private Queue<String> shareQueue;
 
-    private final String wrongImageSignatureFileName = "wrongImageSignature.txt";
+    private ThisResource resource;
+
     private ArrayList<String> wrongImageSignatures;
 
-    public WalkingFileTree(Queue<String> shareQueue) {
+    public WalkingFileTree(Queue<String> shareQueue, ThisResource resource) {
 
         this.shareQueue = shareQueue;
+        this.resource = resource;
 
         wrongImageSignatures = new ArrayList<>();
-        try(BufferedReader file = new BufferedReader(new FileReader(wrongImageSignatureFileName))) {
+
+        try(BufferedReader file = new BufferedReader(new FileReader(resource.getWrongImageSignaturePath().toString()))) {
             String input;
             while((input = file.readLine()) != null) {
                 wrongImageSignatures.add(input);
@@ -41,8 +44,9 @@ public class WalkingFileTree extends SimpleFileVisitor<Path> {
 
 //        非jpg檔轉檔成jpg並加附檔名，jpg檔則增加副檔名
 //        原檔刪除
-        Path out = FileSystems.getDefault().getPath(file.getParent().toString(),
-                                            file.getFileName() + ".jpg");
+        Path cleanDirPath = resource.getCleanDirPath();
+        Path out = cleanDirPath.resolve(file.getParent().getFileName().toString() +
+                "_" + file.getFileName().toString() + ".jpg");
 
         String type = file.toFile().toURI().toURL().openConnection().getContentType();
         if(!type.split("/")[1].equals("jpeg")){
@@ -50,18 +54,18 @@ public class WalkingFileTree extends SimpleFileVisitor<Path> {
         } else {
             Files.copy(file, out, StandardCopyOption.REPLACE_EXISTING);
         }
-        Files.delete(file);
+//        Files.delete(file);
 
 
         Boolean isWrongImage = false;
         if(wrongImageSignatures.size() > 0) {
             isWrongImage = isMissingImage(out);
         }else {
-            System.out.println("No wrong image signature in " + wrongImageSignatureFileName + " file!");
+            System.out.println("No wrong image signature in " + resource.getWrongImageSignaturePath().toString() + " file!");
         }
 
         if(isWrongImage) {
-            Files.delete(file);
+            Files.delete(out);
             System.out.println("Delete a wrong image.");//debug
             shareQueue.add("delete");
         }
@@ -71,6 +75,7 @@ public class WalkingFileTree extends SimpleFileVisitor<Path> {
         return FileVisitResult.CONTINUE;
     }
 
+//    debug
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
         System.out.println(dir.toAbsolutePath());

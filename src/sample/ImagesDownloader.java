@@ -19,10 +19,8 @@ public class ImagesDownloader extends Task<Void> {
 
     private final Queue<String> urlQueue;
     private final Queue<String> massageQueue;
-    private final String mainDirName;
-    private final String projectDirName;
-    private final String imageDirName;
-    private final String imageSubDirName;
+
+    private final Path imageSubDirPath;
 
     private File file;
     private URL url;
@@ -32,18 +30,11 @@ public class ImagesDownloader extends Task<Void> {
 
     public ImagesDownloader(Queue<String> urlQueue,
                             Queue<String> massageQueue,
-                            String mainDirName,
-                            String projectDirName,
-                            String imageDirName,
-                            String imageSubDirName) {
+                            Path imageSubDirPath) {
 
         this.urlQueue = urlQueue;
         this.massageQueue = massageQueue;
-
-        this.mainDirName = mainDirName;
-        this.projectDirName = projectDirName;
-        this.imageDirName = imageDirName;
-        this.imageSubDirName = imageSubDirName;
+        this.imageSubDirPath = imageSubDirPath;
     }
 
     @Override
@@ -89,11 +80,7 @@ public class ImagesDownloader extends Task<Void> {
         try {
             this.massageQueue.add("start downloading");
 
-            Path wantToStoreFilePath = FileSystems.getDefault().getPath(mainDirName,
-                                                                        projectDirName,
-                                                                        imageDirName,
-                                                                        imageSubDirName,
-                                                                        nameAndUrl[0]);
+            Path wantToStoreFilePath = this.imageSubDirPath.resolve(nameAndUrl[0]);
 
             file = new File(wantToStoreFilePath.toString());
             url = new URL(nameAndUrl[1]);

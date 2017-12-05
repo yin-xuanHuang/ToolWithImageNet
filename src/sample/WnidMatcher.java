@@ -14,29 +14,14 @@ public class WnidMatcher extends Task<Void> {
     private ArrayList<String> wnidList;
     private ArrayList<String> urlFilesName;
     private ArrayList<Integer> urlFilesLines;
-    private final String mainDirName;
-    private final String resourceDirName;
-    private final String projectDirName;
-    private final String urlDirName;
-    private final String urlMatchFileName;
-    private final String urlUnmatchFileName;
+    private ThisResource resource;
 //    private final int chooseUrl0Max = 1000;
 
 
-    public WnidMatcher(String mainDirName,
-                       String resourceDirName,
-                       String projectDirName,
-                       String urlDirName,
-                       String urlMatchFileName,
-                       String urlUnmatchFileName,
+    public WnidMatcher(ThisResource resource,
                        ArrayList<String> wnidList) {
 
-        this.mainDirName = mainDirName;
-        this.resourceDirName = resourceDirName;
-        this.projectDirName = projectDirName;
-        this.urlDirName = urlDirName;
-        this.urlMatchFileName = urlMatchFileName;
-        this.urlUnmatchFileName = urlUnmatchFileName;
+        this.resource = resource;
         this.wnidList = wnidList;
 
         urlFilesName = new ArrayList<>();
@@ -70,12 +55,10 @@ public class WnidMatcher extends Task<Void> {
 
         calculateUrlFilesLines();
 
-//        判斷資料捷是否已經存在，並建立資料夾
-        Path urlDirPath = FileSystems.getDefault().getPath(mainDirName,
-                                                           projectDirName,
-                                                           urlDirName);
+//        判斷資料是否已經存在，並建立資料夾
+        Path urlDirPath = resource.getUrlDirPath();
         if(Files.exists(urlDirPath)){
-            updateMessage(urlDirName + " already exist!");
+            updateMessage(urlDirPath.toString() + " already exist!");
             return null;
         } else {
             Files.createDirectory(urlDirPath);
@@ -88,9 +71,8 @@ public class WnidMatcher extends Task<Void> {
         for(int i=0; i<urlFilesName.size(); i++) {
 
 //            建立url庫的路徑
-            Path urlFilePath = FileSystems.getDefault().getPath(mainDirName,
-                                                                resourceDirName,
-                                                                urlFilesName.get(i));
+
+            Path urlFilePath = resource.getResourceDirPath().resolve(urlFilesName.get(i));
             matchedUrl = new ArrayList<>();
             unmatchedUrl = new ArrayList<>();
 
@@ -126,8 +108,8 @@ public class WnidMatcher extends Task<Void> {
 //                    one input line =~ 170 bytes
 //                    500000 lines =~ 100MB
                     if(countStoreListSize >= 500000){
-                        writeUrlToFile(matchedUrl, true);
-                        writeUrlToFile(unmatchedUrl, false);
+                        writeUrlToFile(matchedUrl, 1);
+                        writeUrlToFile(unmatchedUrl, 0);
                         matchedUrl = new ArrayList<>();
                         unmatchedUrl = new ArrayList<>();
                         countStoreListSize = 0;
@@ -138,23 +120,17 @@ public class WnidMatcher extends Task<Void> {
                     lineCount++;
 
                     if(isCancelled()){
-                        Path url1Path = FileSystems.getDefault().getPath(mainDirName,
-                                                                        projectDirName,
-                                                                        urlDirName,
-                                                                        urlMatchFileName);
+                        Path url1Path = resource.getUrlSubFilePath(1);
                         Files.deleteIfExists(url1Path);
-                        Path url0Path = FileSystems.getDefault().getPath(mainDirName,
-                                                                        projectDirName,
-                                                                        urlDirName,
-                                                                        urlUnmatchFileName);
+                        Path url0Path = resource.getUrlSubFilePath(0);
                         Files.deleteIfExists(url0Path);
                         Files.delete(urlDirPath);
                         return null;
                     }
                 }
                 if(countStoreListSize > 0){
-                    writeUrlToFile(matchedUrl, true);
-                    writeUrlToFile(unmatchedUrl, false);
+                    writeUrlToFile(matchedUrl, 1);
+                    writeUrlToFile(unmatchedUrl, 0);
                 }
 
             } catch (IOException e) {
@@ -171,25 +147,9 @@ public class WnidMatcher extends Task<Void> {
      * @param isMatched writing to matching file or writing to un-matching file
      */
 
-    private void writeUrlToFile(ArrayList<String> urlList, boolean isMatched) {
+    private void writeUrlToFile(ArrayList<String> urlList, int isMatched) {
 
-        String whichUrlFileName;
-
-        if(isMatched) {
-            whichUrlFileName = urlMatchFileName;
-        } else {
-//            亂數取1000個(chooseUrl0Max)
-            whichUrlFileName = urlUnmatchFileName;
-//            if(urlList.size() > chooseUrl0Max){
-//                urlList = (ArrayList<String>) urlList.subList(0, chooseUrl0Max);// 執行時間 很長
-//            }
-
-        }
-
-        Path whichUrlPath = FileSystems.getDefault().getPath(mainDirName,
-                                                             projectDirName,
-                                                             urlDirName,
-                                                             whichUrlFileName);
+        Path whichUrlPath = resource.getUrlSubFilePath(isMatched);
 
         try(BufferedWriter urlFile = new BufferedWriter(
                                      new FileWriter(whichUrlPath.toString(), true))) {
@@ -225,13 +185,10 @@ public class WnidMatcher extends Task<Void> {
      */
     private void calculateUrlFilesLines() {
         for(String urlFileName: urlFilesName) {
-            Path urlFilePath = FileSystems.getDefault().getPath(mainDirName,
-                                                                resourceDirName,
-                                                                urlFileName);
+            Path urlFilePath = resource.getResourceDirPath().resolve(urlFileName);
 
             try {
                 urlFilesLines.add(countLines(urlFilePath.toString()));
-                System.out.println(urlFileName + " has " + countLines(urlFilePath.toString()) + " lines.");//debug
             } catch (IOException e) {
                 e.printStackTrace();
             }

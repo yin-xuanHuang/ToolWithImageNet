@@ -24,23 +24,7 @@ import java.util.regex.Pattern;
 
 public class Controller {
 
-    private final String mainDirName = "machineLearningWithImageNetDir";
-    private final String resourceDirName = "resourceDir";
-    private final String wordsTextName = "words.txt";
-
-    private final String projectWnidTextName = "wnid.txt";
-
-    private final String urlDirName = "urlCollection";
-    private final String urlMatchFileName = "url1.txt";
-    private final String urlUnmatchFileName = "url0.txt";
-
-    private final String imageDirName = "imageCollection";
-    private final String imageMatchedDirName = "image1";
-    private final String imageUnmatchedDirName = "image0";
-
-    private final String cleanDirName = "cleanData";
-
-    private final String wrongImageSignatureFileName = "wrongImageSignature.txt";
+    private final ThisResource resource = new ThisResource();
 
     private GetResources task;
     private WnidMatcher wnidMatcher;
@@ -67,8 +51,6 @@ public class Controller {
     @FXML
     private ProgressBar progressBar;
 
-//    @FXML
-//    private Hyperlink stepOneHyperlinkWord, stepOneHyperlinkUrls;
 
     @FXML
     private Stage primaryStage;
@@ -77,8 +59,8 @@ public class Controller {
     public void initialize() {
 //      確認主、資源目錄有無存在，不存在就建立。
         try {
-            Path mainDirPath = FileSystems.getDefault().getPath(mainDirName);
-            Path resourceDirPath = FileSystems.getDefault().getPath(mainDirName, resourceDirName);
+            Path mainDirPath = resource.getMainDirPath();
+            Path resourceDirPath = resource.getResourceDirPath();
             if(!Files.exists(mainDirPath)) {
                 Files.createDirectory(mainDirPath);
             }
@@ -86,7 +68,7 @@ public class Controller {
                 Files.createDirectory(resourceDirPath);
             } else {
 
-                if(Files.exists(FileSystems.getDefault().getPath(mainDirName, resourceDirName, "words.txt")))
+                if(Files.exists(resource.getResourceWordsTextPath()))
                 {
                     stepOneButton.setDisable(false);
                 }
@@ -96,10 +78,9 @@ public class Controller {
                 resourceFiles.add("fall11_urls.txt");
                 resourceFiles.add("spring10_urls.txt");
                 resourceFiles.add("urls.txt");
-                Path resourceFilePath;
 
                 for(String s:resourceFiles) {
-                    resourceFilePath = FileSystems.getDefault().getPath(mainDirName, resourceDirName, s);
+                    Path resourceFilePath = resource.resolveResourcePath(s);
                     if(!Files.exists(resourceFilePath)){
                         stepOneAutoDownloadButton.setDisable(false);
                         break;
@@ -128,19 +109,18 @@ public class Controller {
 
 
 //        step 1
-        String valideTest = inputKeywords.replace(",", "")
+        String validTest = inputKeywords.replace(",", "")
                                          .replace("-", "")
                                          .replace(" ", "");
 
-        Path projectDir = FileSystems.getDefault().getPath(mainDirName, valideTest);
+        Path projectDir = resource.resolveProjectPath(validTest);
         if(Files.exists(projectDir)) {
-            System.out.println("the same project already exist.");//debug
             stepOneLabel.setText("The same project already exist.");
             return;
         }
 
-        if(!isAlpha(valideTest) || valideTest.isEmpty()) {
-//            input not valiate
+        if(!isAlpha(validTest) || validTest.isEmpty()) {
+//            input not valid
             stepOneLabel.setText("輸入有問題，請再次輸入英文單字");
             return;
         } else {
@@ -148,13 +128,13 @@ public class Controller {
         }
 
 //        將字串打成字串陣列
-        String[] keywordsArray = inputKeywords.toLowerCase().split(",");
+        String[] keywordsArray = inputKeywords.toLowerCase().
+                                                replace(" ", "").
+                                                split(",");
 
 //        step 2
 //        確認words.txt有無存在。
-        Path wordsTextFile = FileSystems.getDefault().getPath(mainDirName,
-                                                              resourceDirName,
-                                                              wordsTextName);
+        Path wordsTextFile = resource.getResourceWordsTextPath();
         if(!Files.exists(wordsTextFile)) {
             System.out.println("no words.txt");
             return;
@@ -185,14 +165,6 @@ public class Controller {
             }
         }
 
-        for(String s: valideWnid) {//debug
-            System.out.println(s);
-        }
-        for(String s: keywordsArray) {//debug
-            System.out.println(s);
-        }
-
-//        System.out.println(System.getProperty("user.dir"));//debug
 
         if(valideWnid.size() == 0) {
             System.out.println("No matching available.");
@@ -204,9 +176,7 @@ public class Controller {
         Path projectWnidFile;
         try {
             Files.createDirectory(projectDir);
-            projectWnidFile = FileSystems.getDefault().getPath(mainDirName,
-                                                               valideTest,
-                                                               projectWnidTextName);
+            projectWnidFile = resource.getProjectWnidText();
             Files.createFile(projectWnidFile);
         } catch (IOException e) {
             e.printStackTrace();
@@ -222,7 +192,7 @@ public class Controller {
             return;
         }
 
-        stepOneLabel.setText("Project " + valideTest + "has created.(" + valideWnid.size() + " wnid(s) counted)");
+        stepOneLabel.setText("Project " + validTest + "has created.(" + valideWnid.size() + " wnid(s) counted)");
 
     }
 
@@ -314,7 +284,7 @@ public class Controller {
         }
 
         try {
-            if (!Files.exists(FileSystems.getDefault().getPath(mainDirName, project.getName()))) {
+            if (!Files.exists(resource.resolveProjectPath(project.getName()))) {
                 directoryLabel.setText("Not a project in machineLearningWithImageNet directory.");
                 return;
             }
@@ -326,12 +296,12 @@ public class Controller {
 
 //      確認子專案狀態，以便開啟所需功能
 
-        ArrayList<String> subProjectsName = new ArrayList<>();
-        subProjectsName.add(urlDirName);
-        subProjectsName.add(imageDirName);
-        subProjectsName.add(cleanDirName);//TODO how to determine.
-        subProjectsName.add("hdf5");
-        subProjectsName.add("parameters");
+        ArrayList<Path> projectSubDirPath = new ArrayList<>();
+        projectSubDirPath.add(resource.getUrlDirPath());
+        projectSubDirPath.add(resource.getImageDirPath());
+        projectSubDirPath.add(resource.getCleanDirPath());
+        projectSubDirPath.add(resource.getHdf5DirPath());
+        projectSubDirPath.add(resource.getParameterDirPath());
 
         ArrayList<Button> subProjectsRunButton = new ArrayList<>();
         subProjectsRunButton.add(stepTwoRun);
@@ -340,13 +310,8 @@ public class Controller {
         subProjectsRunButton.add(stepFiveRun);
         subProjectsRunButton.add(stepSixRun);
 
-        Path subProjectPath;
-
-        for(int i=0;i < subProjectsName.size(); i++) {
-            subProjectPath = FileSystems.getDefault().getPath(mainDirName,
-                                                              project.getName(),
-                                                              subProjectsName.get(i));
-            if(!Files.exists(subProjectPath)){
+        for(int i=0;i < projectSubDirPath.size(); i++) {
+            if(!Files.exists(projectSubDirPath.get(i))){
                 subProjectsRunButton.get(i).setDisable(false);
                 break;
 
@@ -364,9 +329,7 @@ public class Controller {
             System.out.println("stepTwo thread start");//debug
 
 //            確認檔案存在
-            Path projectPath = FileSystems.getDefault().getPath(mainDirName,
-                                                                directoryLabel.getText(),
-                                                                projectWnidTextName);
+            Path projectPath = resource.getProjectWnidText();
 
             if (!Files.exists(projectPath)) {
                 System.out.println(directoryLabel.getText() + " can't find.");
@@ -389,13 +352,7 @@ public class Controller {
                 System.out.println(s);
             }*/
 
-            wnidMatcher = new WnidMatcher(mainDirName,
-                                                resourceDirName,
-                                                directoryLabel.getText(),
-                                                urlDirName,
-                                                urlMatchFileName,
-                                                urlUnmatchFileName,
-                                                wnidList);
+            wnidMatcher = new WnidMatcher(resource, wnidList);
 
             wnidMatcher.setOnSucceeded(e -> {
                 stepTwoCancel.setDisable(true);
@@ -429,9 +386,7 @@ public class Controller {
             wnidMatcher.cancel();
 
         } else {
-            Path projectUrlDirPath = FileSystems.getDefault().getPath(mainDirName,
-                                                                directoryLabel.getText(),
-                                                                urlDirName);
+            Path projectUrlDirPath = resource.getUrlDirPath();
             try{
                 Files.deleteIfExists(projectUrlDirPath);
             } catch (IOException e) {
@@ -447,14 +402,7 @@ public class Controller {
 
         if(((Button)actionEvent.getSource()).getId().equals("stepThreeRun")) {
             disableAllButton();
-            imageDownloadForeman = new ImageDownloadForeman(mainDirName,
-                                            directoryLabel.getText(),
-                                            imageDirName,
-                                            imageMatchedDirName,
-                                            imageUnmatchedDirName,
-                                            urlDirName,
-                                            urlMatchFileName,
-                                            urlUnmatchFileName);
+            imageDownloadForeman = new ImageDownloadForeman(resource);
             imageDownloadForeman.setOnSucceeded(e -> {
                 stepThreeCancel.setDisable(true);
                 stepThreeRemove.setDisable(false);
@@ -489,9 +437,7 @@ public class Controller {
         } else if(((Button)actionEvent.getSource()).getId().equals("stepThreeCancel")){
             imageDownloadForeman.cancel();
         } else {
-            Path projectImageDirPath = FileSystems.getDefault().getPath(mainDirName,
-                                                                    directoryLabel.getText(),
-                                                                    imageDirName);
+            Path projectImageDirPath = resource.getImageDirPath();
             deleteDirectory(projectImageDirPath.toFile());
             stepThreeRun.setDisable(false);
             stepThreeRemove.setDisable(true);
@@ -506,12 +452,7 @@ public class Controller {
         // FileVisitor interface
         if(((Button)actionEvent.getSource()).getId().equals("stepFourRun")) {
             disableAllButton();
-            cleanImages = new CleanImages(mainDirName,
-                                        directoryLabel.getText(),
-                                        imageDirName,
-                                        imageMatchedDirName,
-                                        imageUnmatchedDirName,
-                                        cleanDirName);
+            cleanImages = new CleanImages(resource);
 
             cleanImages.setOnSucceeded(e -> {
                 stepFourCancel.setDisable(true);
@@ -547,9 +488,7 @@ public class Controller {
         }else if(((Button)actionEvent.getSource()).getId().equals("stepFourCancel")){
             cleanImages.cancel();
         } else {
-            Path projectImageDirPath = FileSystems.getDefault().getPath(mainDirName,
-                                                                        directoryLabel.getText(),
-                                                                        imageDirName);
+            Path projectImageDirPath = resource.getImageDirPath();
             deleteDirectory(projectImageDirPath.toFile());
             stepFourRun.setDisable(false);
             stepFourRemove.setDisable(true);

@@ -15,14 +15,8 @@ public class ImageDownloadForeman extends Task<Void> {
 
     private final Queue<String> urlQueue;
     private final Queue<String> massageQueue;
-    private final String mainDirName;
-    private final String projectDirName;
 
-    private final String imageDirName;
-    private final ArrayList<String> imageSubDirsName;
-
-    private final String urlDirName;
-    private final ArrayList<String> urlFilesName;
+    private ThisResource resource;
 
     private final int MAX_URLS_IN_QUEUE = 100;
     private final int MAX_CURRENT_THREADS = 32;
@@ -31,30 +25,12 @@ public class ImageDownloadForeman extends Task<Void> {
     private long totalLines;
     private int beforeCreateDownloadThreadCount;
 
-    public ImageDownloadForeman(String mainDirName,
-                                String projectDirName,
-                                String imageDirName,
-                                String imageMatchedDirName,
-                                String imageUnMatchedDirName,
-                                String urlDirName,
-                                String urlMatchedFileName,
-                                String urlUnmatchedFileName) {
+    public ImageDownloadForeman(ThisResource resource) {
 
         this.urlQueue = new ArrayDeque<>();
         this.massageQueue = new ArrayDeque<>();
 
-        this.mainDirName = mainDirName;
-        this.projectDirName = projectDirName;
-
-        this.imageDirName = imageDirName;
-        this.imageSubDirsName = new ArrayList<>();
-        imageSubDirsName.add(imageMatchedDirName);
-        imageSubDirsName.add(imageUnMatchedDirName);
-
-        this.urlDirName = urlDirName;
-        this.urlFilesName = new ArrayList<>();
-        urlFilesName.add(urlMatchedFileName);
-        urlFilesName.add(urlUnmatchedFileName);
+        this.resource = resource;
 
         updateMessage("準備中。。。");
 
@@ -77,20 +53,15 @@ public class ImageDownloadForeman extends Task<Void> {
     protected Void call() throws Exception {
 
         this.totalLines = calculateUrlFilesLines();
-        Path imageDirPath = FileSystems.getDefault().getPath(mainDirName,
-                                                            projectDirName,
-                                                            imageDirName);
+        Path imageDirPath = resource.getImageDirPath();
         if(!Files.exists(imageDirPath))
             Files.createDirectory(imageDirPath);
 
         Path imageSubDirPath;
 
-        for(int whichIndex=0; whichIndex<urlFilesName.size(); whichIndex++){
+        for(int whichIndex=0; whichIndex<2; whichIndex++){
 
-            imageSubDirPath = FileSystems.getDefault().getPath(mainDirName,
-                                                                projectDirName,
-                                                                imageDirName,
-                                                                imageSubDirsName.get(whichIndex));
+            imageSubDirPath = resource.getImageSubDirPath(whichIndex);
             if(!Files.exists(imageSubDirPath))
                 Files.createDirectory(imageSubDirPath);
 
@@ -101,9 +72,7 @@ public class ImageDownloadForeman extends Task<Void> {
             downloadThreadJoin();
 
             if(isCancelled()){
-                Path projectImageDirPath = FileSystems.getDefault().getPath(mainDirName,
-                                                                            projectDirName,
-                                                                            imageDirName);
+                Path projectImageDirPath = resource.getImageDirPath();
                 deleteDirectory(projectImageDirPath.toFile());
                 break;
             }
@@ -121,10 +90,7 @@ public class ImageDownloadForeman extends Task<Void> {
      */
     private void readAndPush(int whichIndex) {
 
-        Path urlFilePath = FileSystems.getDefault().getPath(mainDirName,
-                                                            projectDirName,
-                                                            urlDirName,
-                                                            urlFilesName.get(whichIndex));
+        Path urlFilePath = resource.getUrlSubFilePath(whichIndex);
 
         try(BufferedReader urlFile = new BufferedReader(
                                      new FileReader(urlFilePath.toString()))) {
@@ -189,10 +155,7 @@ public class ImageDownloadForeman extends Task<Void> {
 
             new Thread(new ImagesDownloader(urlQueue,
                                             massageQueue,
-                                            mainDirName,
-                                            projectDirName,
-                                            imageDirName,
-                                            imageSubDirsName.get(whichIndex))
+                                            resource.getImageSubDirPath(whichIndex))
             ).start();
 
         }
@@ -226,15 +189,12 @@ public class ImageDownloadForeman extends Task<Void> {
 
         long totalLines = 0;
 
-        for(String urlFileName: urlFilesName){
-            Path urlFilePath = FileSystems.getDefault().getPath(mainDirName,
-                    projectDirName,
-                    urlDirName,
-                    urlFileName);
+        for(int i=0; i<2; i++){
+            Path urlFilePath = resource.getUrlSubFilePath(i);
 
             try {
                 totalLines += countLines(urlFilePath.toString());
-                System.out.println(urlFileName + " has " + countLines(urlFilePath.toString()) + " lines.");//debug
+                System.out.println(urlFilePath.toString() + " has " + countLines(urlFilePath.toString()) + " lines.");//debug
             } catch (IOException e) {
                 e.printStackTrace();
             }

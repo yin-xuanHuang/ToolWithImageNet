@@ -10,7 +10,7 @@
     <orderEntry type="library" name="jarchivelib-0.7.1-jar-with-dependencies" level="project" />
     <orderEntry type="library" name="ant" level="project" />
     <orderEntry type="library" name="xmpcore-5.1.2" level="project" />
-    <orderEntry type="library" name="jarhdf5-1.10.1" level="project" />
     <orderEntry type="library" name="opencv-330" level="project" />
+    <orderEntry type="library" name="hdfobject" level="project" />
   </component>
 </module>
