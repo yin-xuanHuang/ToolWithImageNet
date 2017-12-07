@@ -9,6 +9,11 @@
     <root id="root">
       <element id="archive" name="JavaFXApp.jar">
         <element id="module-output" name="playGround" />
+        <element id="library" level="project" name="ant" />
+        <element id="library" level="project" name="jarchivelib-0.7.1-jar-with-dependencies" />
+        <element id="library" level="project" name="jarhdf5-3.3.2" />
+        <element id="library" level="project" name="opencv-330" />
+        <element id="library" level="project" name="xmpcore-5.1.2" />
       </element>
     </root>
   </artifact>

@@ -18,11 +18,10 @@ public class WnidMatcher extends Task<Void> {
 //    private final int chooseUrl0Max = 1000;
 
 
-    public WnidMatcher(ThisResource resource,
-                       ArrayList<String> wnidList) {
+    public WnidMatcher(ThisResource resource) {
 
         this.resource = resource;
-        this.wnidList = wnidList;
+        this.wnidList = new ArrayList<>();
 
         urlFilesName = new ArrayList<>();
         urlFilesName.add("winter11_urls.txt");
@@ -52,6 +51,8 @@ public class WnidMatcher extends Task<Void> {
 
     @Override
     protected Void call() throws Exception {
+
+        this.wnidList = this.getWnidList();
 
         calculateUrlFilesLines();
 
@@ -85,7 +86,7 @@ public class WnidMatcher extends Task<Void> {
 
 //            讀取url庫
             try(BufferedReader urlFile = new BufferedReader(
-                                         new FileReader(urlFilePath.toString()))) {
+                    new FileReader(urlFilePath.toString()))) {
 
                 String input;
                 int countStoreListSize = 0;
@@ -141,6 +142,27 @@ public class WnidMatcher extends Task<Void> {
     }
 
     /**
+     * 將專案的wnid.txt讀到 list裡
+     *
+     * @return wnid 列表
+     */
+    private ArrayList<String> getWnidList() {
+
+        ArrayList<String> wnidList = new ArrayList<>();
+        try (BufferedReader wnidTextReader = new BufferedReader(new FileReader(resource.getProjectWnidText().toString()))) {
+            String input;
+            while ((input = wnidTextReader.readLine()) != null) {
+                wnidList.add(input);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        return  wnidList;
+    }
+
+    /**
      * Writing(append) chosen data to a file
      *
      * @param urlList the data list be chosen to write to a file
@@ -152,7 +174,7 @@ public class WnidMatcher extends Task<Void> {
         Path whichUrlPath = resource.getUrlSubFilePath(isMatched);
 
         try(BufferedWriter urlFile = new BufferedWriter(
-                                     new FileWriter(whichUrlPath.toString(), true))) {
+                new FileWriter(whichUrlPath.toString(), true))) {
             for(String s: urlList) {
                 urlFile.write(s + "\n");
             }

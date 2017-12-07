@@ -1,12 +1,11 @@
 package sample;
 
-import java.io.File;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 
 public class ThisResource {
-    private static final String mainDirName = "machineLearningWithImageNetDir";
-    private final String wrongImageSignatureFileName = "wrongImageSignature.txt";
+    private static final String mainDirName = "DataCleanWithImageNet";
+    private static final String wrongImageSignatureFileName = "wrongImageSignature.txt";
 
     private static final String resourceDirName = "resourceDir";
     private static final String wordsTextName = "words.txt";
@@ -26,8 +25,6 @@ public class ThisResource {
     private static final String cleanDirName = "cleanData";
 
     private static final String hdf5DirName = "hdf5";
-
-    private static final String parameterDirName = "parameter";
 
     public ThisResource() {
         this.projectDirName = "";
@@ -64,8 +61,8 @@ public class ThisResource {
 
     public Path getProjectWnidText() {
         return FileSystems.getDefault().getPath(mainDirName,
-                                                projectDirName,
-                                                projectWnidTextName);
+                projectDirName,
+                projectWnidTextName);
     }
 
     public Path getUrlDirPath() {
@@ -90,12 +87,6 @@ public class ThisResource {
         return FileSystems.getDefault().getPath(mainDirName,
                 projectDirName,
                 hdf5DirName);
-    }
-
-    public Path getParameterDirPath() {
-        return FileSystems.getDefault().getPath(mainDirName,
-                projectDirName,
-                parameterDirName);
     }
 
     public Path getImageSubDirPath(int whichSubDir){

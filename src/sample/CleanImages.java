@@ -20,24 +20,28 @@ public class CleanImages extends Task<Void> {
     public CleanImages(ThisResource resource) {
 
         this.resource = resource;
-
-
         shareQueue = new ArrayDeque<>();
+        updateMessage("準備中。。。");
 
     }
 
     @Override
     protected Void call() throws Exception {
 
+        System.out.println("debugm");
         totalFiles = getTotalFiles();
-
+        System.out.println("debugm1");
+        if(totalFiles == -1){
+            updateMessage("Can't find all image sub directories.");
+            System.out.println("Can't find all image sub directories.");
+            return null;
+        }
+        System.out.println("debugm2");
         Path imagePath = resource.getImageDirPath();
-
 //        create cleanImageDir
         Path cleanDirPath = resource.getCleanDirPath();
         if(!Files.exists(cleanDirPath))
             Files.createDirectory(cleanDirPath);
-
 
         new Thread(() -> {
             try {
@@ -64,16 +68,32 @@ public class CleanImages extends Task<Void> {
      *
      * @return total files in the project's image directory
      */
-    private long getTotalFiles() {
+    private long getTotalFiles(){
 
         long totalFiles = 0;
-
+        String[] strings;
 
         Path imageSubDirPath = resource.getImageSubDirPath(0);
-        totalFiles += imageSubDirPath.toFile().list().length;
+        if(!Files.exists(imageSubDirPath))
+            return -1;
+        try {
+            strings = imageSubDirPath.toFile().list();
+        } catch (NullPointerException e){
+            e.printStackTrace();
+            return -1;
+        }
+        totalFiles += strings.length;
 
         imageSubDirPath = resource.getImageSubDirPath(1);
-        totalFiles += imageSubDirPath.toFile().list().length;
+        if(!Files.exists(imageSubDirPath))
+            return -1;
+        try {
+            strings = imageSubDirPath.toFile().list();
+        } catch (NullPointerException e){
+            e.printStackTrace();
+            return -1;
+        }
+        totalFiles += strings.length;
 
         return totalFiles;
     }

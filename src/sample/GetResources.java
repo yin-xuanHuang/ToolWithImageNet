@@ -9,18 +9,15 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 
 public class GetResources extends Task<Void> {
 
+    private ThisResource resource;
     private final ArrayList<String> urllist = new ArrayList<>();
     private final ArrayList<String> fileNameList = new ArrayList<>();
-
-    private final String mainDirName = "machineLearningWithImageNetDir";
-    private final String resourceDirName = "resourceDir";
 
     private File file;
     private URL url;
@@ -31,7 +28,9 @@ public class GetResources extends Task<Void> {
     private BufferedInputStream is;
     private FileOutputStream fos;
 
-    public GetResources() {
+    public GetResources(ThisResource resource) {
+        this.resource = resource;
+
         updateMessage("Download thread is creating ...");
 
         urllist.add("http://image-net.org/archive/words.txt");
@@ -62,9 +61,7 @@ public class GetResources extends Task<Void> {
     private void decompressFiles() {
         for(int i=1;i<5;i++) {
             try {
-                Path inPath = FileSystems.getDefault().getPath(mainDirName,
-                        resourceDirName,
-                        fileNameList.get(i));
+                Path inPath = resource.resolveResourcePath(fileNameList.get(i));
 
                 if(!Files.exists(inPath))
                     continue;
@@ -80,9 +77,7 @@ public class GetResources extends Task<Void> {
                         if (ze.isDirectory()) {
                             continue;
                         }
-                        Path outPath = FileSystems.getDefault().getPath(mainDirName,
-                                                                        resourceDirName,
-                                                                        ze.getName());
+                        Path outPath = resource.resolveResourcePath(ze.getName());
                         OutputStream fos = new BufferedOutputStream(new FileOutputStream(outPath.toString()));
                         try {
                             try {
@@ -128,9 +123,7 @@ public class GetResources extends Task<Void> {
         int i;
         for(i=0; i<5; i++) {
             try {
-                wantToStoreFile = FileSystems.getDefault().getPath(mainDirName,
-                        resourceDirName,
-                        fileNameList.get(i));
+                wantToStoreFile = resource.resolveResourcePath(fileNameList.get(i));
                 if(Files.exists(wantToStoreFile))
                     continue;
 

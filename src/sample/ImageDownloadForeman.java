@@ -93,7 +93,7 @@ public class ImageDownloadForeman extends Task<Void> {
         Path urlFilePath = resource.getUrlSubFilePath(whichIndex);
 
         try(BufferedReader urlFile = new BufferedReader(
-                                     new FileReader(urlFilePath.toString()))) {
+                new FileReader(urlFilePath.toString()))) {
 
             String input;
             while((input = urlFile.readLine()) != null){
@@ -153,9 +153,9 @@ public class ImageDownloadForeman extends Task<Void> {
         if(Thread.activeCount() < MAX_CURRENT_THREADS) {
 
 
-            new Thread(new ImagesDownloader(urlQueue,
-                                            massageQueue,
-                                            resource.getImageSubDirPath(whichIndex))
+            new Thread(new ImageDownloader(urlQueue,
+                    massageQueue,
+                    resource.getImageSubDirPath(whichIndex))
             ).start();
 
         }
@@ -194,7 +194,6 @@ public class ImageDownloadForeman extends Task<Void> {
 
             try {
                 totalLines += countLines(urlFilePath.toString());
-                System.out.println(urlFilePath.toString() + " has " + countLines(urlFilePath.toString()) + " lines.");//debug
             } catch (IOException e) {
                 e.printStackTrace();
             }

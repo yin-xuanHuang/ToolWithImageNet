@@ -50,7 +50,11 @@ public class WalkingFileTree extends SimpleFileVisitor<Path> {
 
         String type = file.toFile().toURI().toURL().openConnection().getContentType();
         if(!type.split("/")[1].equals("jpeg")){
-            image2jpeg(file, out);
+            if(!image2jpeg(file, out)) {
+                Files.deleteIfExists(out);
+                Files.deleteIfExists(file);
+                return FileVisitResult.CONTINUE;
+            }
         } else {
             Files.copy(file, out, StandardCopyOption.REPLACE_EXISTING);
         }
@@ -75,7 +79,7 @@ public class WalkingFileTree extends SimpleFileVisitor<Path> {
         return FileVisitResult.CONTINUE;
     }
 
-//    debug
+    //    debug
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
         System.out.println(dir.toAbsolutePath());
@@ -95,7 +99,7 @@ public class WalkingFileTree extends SimpleFileVisitor<Path> {
      * @param in the origin image path.
      * @param out want to store the converted image path.
      */
-    private void image2jpeg(Path in, Path out) {
+    private boolean image2jpeg(Path in, Path out) {
         try (InputStream is = new FileInputStream(in.toFile())) {
             ImageInputStream iis = ImageIO.createImageInputStream(is);
             BufferedImage image = ImageIO.read(iis);
@@ -104,10 +108,13 @@ public class WalkingFileTree extends SimpleFileVisitor<Path> {
                 ImageIO.write(image, "jpg", ios);
             } catch (Exception exp) {
                 exp.printStackTrace();
+                return false;
             }
         } catch (Exception exp) {
             exp.printStackTrace();
+            return false;
         }
+        return true;
     }
 
     /**

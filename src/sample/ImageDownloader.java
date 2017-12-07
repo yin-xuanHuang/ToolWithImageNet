@@ -10,12 +10,11 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Queue;
 
-public class ImagesDownloader extends Task<Void> {
+public class ImageDownloader extends Task<Void> {
 
     private final Queue<String> urlQueue;
     private final Queue<String> massageQueue;
@@ -28,7 +27,7 @@ public class ImagesDownloader extends Task<Void> {
     private BufferedInputStream is;
     private FileOutputStream fos;
 
-    public ImagesDownloader(Queue<String> urlQueue,
+    public ImageDownloader(Queue<String> urlQueue,
                             Queue<String> massageQueue,
                             Path imageSubDirPath) {
 
