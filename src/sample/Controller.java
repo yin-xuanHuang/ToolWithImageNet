@@ -42,9 +42,10 @@ public class Controller {
 
     @FXML
     private Button stepOneButton, stepOneAutoDownloadButton,
-            stepTwoRun, stepThreeRun, stepThreeCancel,
-            stepFourRun, stepFourCancel,
-            stepFiveRun, stepFiveCancel;
+            stepTwoRun,
+            stepThreeRun, stepThreeCancel,
+            stepFourRun,
+            stepFiveRun;
 
     @FXML
     private ProgressBar progressBar;
@@ -58,8 +59,6 @@ public class Controller {
 
     public void initialize() {
 //        先關所有功能
-        stepOneHyperlinkWord.setDisable(true);
-        stepOneHyperlinkUrls.setDisable(true);
         disableAllButton();
         
 //        確認主、資源目錄有無存在，不存在就建立。
@@ -71,33 +70,41 @@ public class Controller {
             Path resourceDirPath = resource.getResourceDirPath();
             if(!Files.exists(resourceDirPath)) {
                 Files.createDirectory(resourceDirPath);
-            } else {
-//                有資源wnid.txt 就開啟stepOne 的功能
-                if(Files.exists(resource.getResourceWordsTextPath()))
-                {
-                    stepOneButton.setDisable(false);
-                }
-//                有全部資源檔才關閉自動下載資源檔按鈕
-                ArrayList<String> resourceFiles = new ArrayList<>();
-                resourceFiles.add("winter11_urls.txt");
-                resourceFiles.add("fall11_urls.txt");
-                resourceFiles.add("spring10_urls.txt");
-                resourceFiles.add("urls.txt");
-
-                stepOneAutoDownloadButton.setDisable(true);
-
-                for(String s:resourceFiles) {
-                    Path resourceFilePath = resource.resolveResourcePath(s);
-                    if(!Files.exists(resourceFilePath)){
-                        stepOneAutoDownloadButton.setDisable(false);
-                        stepOneHyperlinkWord.setDisable(false);
-                        stepOneHyperlinkUrls.setDisable(false);
-                        break;
+            }
+            Path resourceWrongImageSignatureFilePath = resource.getWrongImageSignaturePath();
+            if(!Files.exists(resourceWrongImageSignatureFilePath)){
+                ArrayList<String> wrongImageSignatureData = resource.getWrongImageSignatureData();
+                try(BufferedWriter wo = new BufferedWriter(new FileWriter(resourceWrongImageSignatureFilePath.toString()))){
+                    for(String signature: wrongImageSignatureData){
+                        wo.write(signature + "\n");
                     }
                 }
-                if(stepOneAutoDownloadButton.isDisable())
-                    openDirectoryButton.setDisable(false);
             }
+
+//            有資源wnid.txt 就開啟stepOne 的功能
+            if(Files.exists(resource.getResourceWordsTextPath()))
+            {
+                stepOneButton.setDisable(false);
+            } else {
+                stepOneAutoDownloadButton.setDisable(false);
+                stepOneHyperlinkWord.setDisable(false);
+                stepOneHyperlinkUrls.setDisable(false);
+            }
+//            有全部資源檔才關閉自動下載資源檔按鈕
+            ArrayList<String> resourceFiles = resource.getResourceUrlFiles();
+
+            for(String s:resourceFiles) {
+                Path resourceFilePath = resource.resolveResourcePath(s);
+                if(!Files.exists(resourceFilePath)){
+                    stepOneAutoDownloadButton.setDisable(false);
+                    stepOneHyperlinkWord.setDisable(false);
+                    stepOneHyperlinkUrls.setDisable(false);
+                    break;
+                }
+            }
+            if(stepOneAutoDownloadButton.isDisable())
+                openDirectoryButton.setDisable(false);
+
 
         } catch(IOException e) {
             e.printStackTrace();
@@ -106,15 +113,22 @@ public class Controller {
 
     }
 
-    /*1.確認輸入有無合法並處理。
-     *2.檢查words.txt文件檔是否存在並讀檔。
-     *3.將輸入關鍵字與檔案內容進行比對。
-     *4.建立專案以及結果資料儲存。         */
+    /**
+     *
+     * 1.確認輸入有無合法並處理。
+     * 2.檢查words.txt文件檔是否存在並讀檔。
+     * 3.將輸入關鍵字與檔案內容進行比對。
+     * 4.建立專案以及結果資料儲存。
+     *
+     */
     @FXML
     public void stepOneSubmitAction() {
+
         String inputKeywords = stepOneTextField.getText();
-
-
+        if(inputKeywords.equals("")){
+            stepOneLabel.setText("無輸入");
+            return;
+        }
 
 //        step 1
 //        移除掉允許的添加字元，進行判斷
@@ -208,7 +222,7 @@ public class Controller {
     /**
      * 用瀏覽器開啟自行下載的網頁
      *
-     * @param actionEvent
+     * @param actionEvent which hypertext to be clicked
      */
     @FXML
     public void openWebsiteAction(ActionEvent actionEvent) {
@@ -251,6 +265,7 @@ public class Controller {
      */
     @FXML
     public void stepOneDownloadAction() {
+        disableAllButton();
 
         System.out.println("auto-download be clicked.");//debug
 //        下載任務執行緒
@@ -261,10 +276,11 @@ public class Controller {
         getResources.setOnSucceeded(e -> {
             stepOneButton.setDisable(false);
             openDirectoryButton.setDisable(false);
-            stepOneAutoDownloadButton.setDisable(true);
+            stepOneAutoDownloadButton.setDisable(false);
             progressBar.progressProperty().unbind();
             progressBarLabel.textProperty().unbind();
             progressBarLabel.setText("Download finished.");
+            progressBar.setProgress(-1);
         });
 
         new Thread(getResources).start();
@@ -280,10 +296,7 @@ public class Controller {
     public void openDirectoryAction() {
 
         stepOneButton.setDisable(true);
-        stepTwoRun.setDisable(true);
-        stepThreeRun.setDisable(true);
-        stepFourRun.setDisable(true);
-        stepFiveRun.setDisable(true);
+        openDirectoryButton.setDisable(true);
 
 //        開啟選擇資料夾視窗
         DirectoryChooser chooser = new DirectoryChooser();
@@ -297,22 +310,28 @@ public class Controller {
                 e.printStackTrace();
             }
         } else {
+            stepOneButton.setDisable(false);
+            openDirectoryButton.setDisable(false);
             return;
         }
 
+//        確認選擇的資料夾在指定範圍內
         try {
             if (!Files.exists(resource.resolveProjectPath(project.getName()))) {
                 directoryLabel.setText("您選的資料夾不在" + resource.getMainDirPath().toString() + "裡！");
+                stepOneButton.setDisable(false);
+                openDirectoryButton.setDisable(false);
                 return;
             }
         } catch(NullPointerException e){
             e.printStackTrace();
             directoryLabel.setText("您選的資料夾不在" + resource.getMainDirPath().toString() + "裡！");
+            stepOneButton.setDisable(false);
+            openDirectoryButton.setDisable(false);
             return;
         }
 
 //        確認子專案狀態，以便開啟所需功能
-
         ArrayList<Path> projectSubDirPath = new ArrayList<>();
         projectSubDirPath.add(resource.getUrlDirPath());
         projectSubDirPath.add(resource.getImageDirPath());
@@ -333,6 +352,9 @@ public class Controller {
             }
         }
 
+        stepOneButton.setDisable(false);
+        openDirectoryButton.setDisable(false);
+
 
     }
 
@@ -351,9 +373,12 @@ public class Controller {
             stepThreeRun.setDisable(false);
             stepOneButton.setDisable(false);
             openDirectoryButton.setDisable(false);
+            stepOneAutoDownloadButton.setDisable(false);
+            stepOneHyperlinkWord.setDisable(false);
+            stepOneHyperlinkUrls.setDisable(false);
             progressBar.progressProperty().unbind();
             progressBarLabel.textProperty().unbind();
-            progressBarLabel.setText("SubProject(create url files) get done.");
+            progressBarLabel.setText("URL檔案比對以及建立完成");
             progressBar.setProgress(-1);
         });
 
@@ -368,7 +393,7 @@ public class Controller {
     /**
      * Downloading images by the project's url files
      *
-     * @param actionEvent
+     * @param actionEvent run or cancel
      */
     @FXML
     public void stepThreeRunAction(ActionEvent actionEvent) {
@@ -382,9 +407,12 @@ public class Controller {
                 stepFourRun.setDisable(false);
                 stepOneButton.setDisable(false);
                 openDirectoryButton.setDisable(false);
+                stepOneAutoDownloadButton.setDisable(false);
+                stepOneHyperlinkWord.setDisable(false);
+                stepOneHyperlinkUrls.setDisable(false);
                 progressBar.progressProperty().unbind();
                 progressBarLabel.textProperty().unbind();
-                progressBarLabel.setText("SubProject(download image files) get done.");
+                progressBarLabel.setText("圖片檔案下載完成");
                 progressBar.setProgress(-1);
             });
 
@@ -392,10 +420,12 @@ public class Controller {
                 stepThreeRun.setDisable(false);
                 stepThreeCancel.setDisable(true);
                 stepOneButton.setDisable(false);
-                openDirectoryButton.setDisable(false);
+                stepOneAutoDownloadButton.setDisable(false);
+                stepOneHyperlinkWord.setDisable(false);
+                stepOneHyperlinkUrls.setDisable(false);
                 progressBar.progressProperty().unbind();
                 progressBarLabel.textProperty().unbind();
-                progressBarLabel.setText("Cancel finished.");
+                progressBarLabel.setText("停止發出下載工作。（可能還有一些執行緒在下載之前發出的工作）");
                 progressBar.setProgress(-1);
             });
 
@@ -415,98 +445,63 @@ public class Controller {
     /**
      * Cleaning the project's images by checking each whether is image file type
      *
-     * @param actionEvent
      */
     @FXML
-    public void stepFourRunAction(ActionEvent actionEvent) {
+    public void stepFourRunAction() {
         // walk file tree
         // FileVisitor interface
-        if(((Button)actionEvent.getSource()).getId().equals("stepFourRun")) {
-            disableAllButton();
+        disableAllButton();
 
-            cleanImages = new CleanImages(resource);
+        cleanImages = new CleanImages(resource);
 
-            cleanImages.setOnSucceeded(e -> {
-                stepFourCancel.setDisable(true);
-                stepFiveRun.setDisable(false);
-                stepOneButton.setDisable(false);
-                openDirectoryButton.setDisable(false);
-                progressBar.progressProperty().unbind();
-                progressBarLabel.textProperty().unbind();
-                progressBarLabel.setText("SubProject(clean image files) get done.");
-                progressBar.setProgress(-1);
-            });
+        cleanImages.setOnSucceeded(e -> {
+            stepFiveRun.setDisable(false);
+            stepOneButton.setDisable(false);
+            openDirectoryButton.setDisable(false);
+            stepOneAutoDownloadButton.setDisable(false);
+            stepOneHyperlinkWord.setDisable(false);
+            stepOneHyperlinkUrls.setDisable(false);
+            progressBar.progressProperty().unbind();
+            progressBarLabel.textProperty().unbind();
+            progressBarLabel.setText("圖片清理完成");
+            progressBar.setProgress(-1);
+        });
 
-            cleanImages.setOnCancelled(e -> {
-                stepFourRun.setDisable(false);
-                stepFourCancel.setDisable(true);
-                stepOneButton.setDisable(false);
-                openDirectoryButton.setDisable(false);
-                progressBar.progressProperty().unbind();
-                progressBarLabel.textProperty().unbind();
-                progressBarLabel.setText("Cancel finished.");
-                progressBar.setProgress(-1);
-            });
+        progressBar.progressProperty().bind(cleanImages.progressProperty());
+        progressBarLabel.textProperty().bind(cleanImages.messageProperty());
 
+        new Thread(cleanImages).start();
+        System.out.println("CleanImage thread start");//debug
 
-            progressBar.progressProperty().bind(cleanImages.progressProperty());
-            progressBarLabel.textProperty().bind(cleanImages.messageProperty());
-
-            new Thread(cleanImages).start();
-            System.out.println("CleanImage thread start");//debug
-            stepFourCancel.setDisable(false);
-
-        } else {
-            cleanImages.cancel();
-        }
     }
 
     /**
      * Make one HDF5 file from the project's images
      *
-     * @param actionEvent
      */
     @FXML
-    public void stepFiveRunAction(ActionEvent actionEvent) {
+    public void stepFiveRunAction() {
+        disableAllButton();
+        int width = 64;
+        makeHDF5 = new MakeHDF5(resource, width);
 
-        if(((Button)actionEvent.getSource()).getId().equals("stepFiveRun")) {
-            disableAllButton();
+        makeHDF5.setOnSucceeded(e -> {
+            stepOneButton.setDisable(false);
+            openDirectoryButton.setDisable(false);
+            stepOneAutoDownloadButton.setDisable(false);
+            stepOneHyperlinkWord.setDisable(false);
+            stepOneHyperlinkUrls.setDisable(false);
+            progressBar.progressProperty().unbind();
+            progressBarLabel.textProperty().unbind();
+            progressBarLabel.setText("SubProject(make HDF5) get done.");
+            progressBar.setProgress(-1);
+        });
 
-            int width = 64;
-            makeHDF5 = new MakeHDF5(resource, width);
+        progressBar.progressProperty().bind(makeHDF5.progressProperty());
+        progressBarLabel.textProperty().bind(makeHDF5.messageProperty());
 
-            makeHDF5.setOnSucceeded(e -> {
-                stepFiveCancel.setDisable(true);
-                stepOneButton.setDisable(false);
-                openDirectoryButton.setDisable(false);
-                progressBar.progressProperty().unbind();
-                progressBarLabel.textProperty().unbind();
-                progressBarLabel.setText("SubProject(make HDF5) get done.");
-                progressBar.setProgress(-1);
-            });
-
-            makeHDF5.setOnCancelled(e -> {
-                stepFiveRun.setDisable(false);
-                stepFiveCancel.setDisable(true);
-                stepOneButton.setDisable(false);
-                openDirectoryButton.setDisable(false);
-                progressBar.progressProperty().unbind();
-                progressBarLabel.textProperty().unbind();
-                progressBarLabel.setText("Cancel finished.");
-                progressBar.setProgress(-1);
-            });
-
-
-            progressBar.progressProperty().bind(makeHDF5.progressProperty());
-            progressBarLabel.textProperty().bind(makeHDF5.messageProperty());
-
-            new Thread(makeHDF5).start();
-            System.out.println("MakeHDF5 thread start");//debug
-            stepFiveCancel.setDisable(false);
-
-        } else {
-            makeHDF5.cancel();
-        }
+        new Thread(makeHDF5).start();
+        System.out.println("MakeHDF5 thread start");//debug
     }
 
 
@@ -550,25 +545,10 @@ public class Controller {
         stepThreeRun.setDisable(true);
         stepThreeCancel.setDisable(true);
         stepFourRun.setDisable(true);
-        stepFourCancel.setDisable(true);
         stepFiveRun.setDisable(true);
-        stepFiveCancel.setDisable(true);
-    }
-
-    /**
-     * Delete the directory recursively.
-     *
-     * @param directoryToBeDeleted the directory wanted to delete.
-     * @return whether it is success or not.
-     */
-    private boolean deleteDirectory(File directoryToBeDeleted) {
-        File[] allContents = directoryToBeDeleted.listFiles();
-        if (allContents != null) {
-            for (File file : allContents) {
-                deleteDirectory(file);
-            }
-        }
-        return directoryToBeDeleted.delete();
+        stepOneAutoDownloadButton.setDisable(true);
+        stepOneHyperlinkUrls.setDisable(true);
+        stepOneHyperlinkWord.setDisable(true);
     }
 
 }

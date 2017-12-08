@@ -81,6 +81,10 @@ public class ImageDownloader extends Task<Void> {
 
             Path wantToStoreFilePath = this.imageSubDirPath.resolve(nameAndUrl[0]);
 
+//            之前已經下載過得檔案
+            if(Files.exists(wantToStoreFilePath))
+                return;
+
             file = new File(wantToStoreFilePath.toString());
             url = new URL(nameAndUrl[1]);
 

@@ -72,8 +72,6 @@ public class ImageDownloadForeman extends Task<Void> {
             downloadThreadJoin();
 
             if(isCancelled()){
-                Path projectImageDirPath = resource.getImageDirPath();
-                deleteDirectory(projectImageDirPath.toFile());
                 break;
             }
         }
@@ -228,21 +226,5 @@ public class ImageDownloadForeman extends Task<Void> {
         } finally {
             is.close();
         }
-    }
-
-    /**
-     * Delete the directory recursively.
-     *
-     * @param directoryToBeDeleted the directory wanted to delete.
-     * @return whether it is success or not.
-     */
-    private boolean deleteDirectory(File directoryToBeDeleted) {
-        File[] allContents = directoryToBeDeleted.listFiles();
-        if (allContents != null) {
-            for (File file : allContents) {
-                deleteDirectory(file);
-            }
-        }
-        return directoryToBeDeleted.delete();
     }
 }

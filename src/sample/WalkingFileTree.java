@@ -5,6 +5,7 @@ import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.net.MalformedURLException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
@@ -40,7 +41,7 @@ public class WalkingFileTree extends SimpleFileVisitor<Path> {
     }
 
     @Override
-    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
 
 //        非jpg檔轉檔成jpg並加附檔名，jpg檔則增加副檔名
 //        原檔刪除
@@ -48,18 +49,36 @@ public class WalkingFileTree extends SimpleFileVisitor<Path> {
         Path out = cleanDirPath.resolve(file.getParent().getFileName().toString() +
                 "_" + file.getFileName().toString() + ".jpg");
 
-        String type = file.toFile().toURI().toURL().openConnection().getContentType();
+//        檔案已經清理過了
+        if(Files.exists(out))
+            return FileVisitResult.CONTINUE;
+
+        String type = "";
+        try {
+            type = file.toFile().toURI().toURL().openConnection().getContentType();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         if(!type.split("/")[1].equals("jpeg")){
             if(!image2jpeg(file, out)) {
-                Files.deleteIfExists(out);
-                Files.deleteIfExists(file);
+                try {
+                    Files.deleteIfExists(out);
+                    Files.deleteIfExists(file);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 return FileVisitResult.CONTINUE;
             }
         } else {
-            Files.copy(file, out, StandardCopyOption.REPLACE_EXISTING);
+            try {
+                Files.copy(file, out, StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-//        Files.delete(file);
-
 
         Boolean isWrongImage = false;
         if(wrongImageSignatures.size() > 0) {
@@ -69,7 +88,11 @@ public class WalkingFileTree extends SimpleFileVisitor<Path> {
         }
 
         if(isWrongImage) {
-            Files.delete(out);
+            try{
+                Files.delete(out);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             System.out.println("Delete a wrong image.");//debug
             shareQueue.add("delete");
         }
@@ -79,7 +102,6 @@ public class WalkingFileTree extends SimpleFileVisitor<Path> {
         return FileVisitResult.CONTINUE;
     }
 
-    //    debug
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
         System.out.println(dir.toAbsolutePath());

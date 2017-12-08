@@ -18,6 +18,7 @@ public class GetResources extends Task<Void> {
     private ThisResource resource;
     private final ArrayList<String> urllist = new ArrayList<>();
     private final ArrayList<String> fileNameList = new ArrayList<>();
+    private final ArrayList<String> deFileNameList;
 
     private File file;
     private URL url;
@@ -31,7 +32,7 @@ public class GetResources extends Task<Void> {
     public GetResources(ThisResource resource) {
         this.resource = resource;
 
-        updateMessage("Download thread is creating ...");
+        updateMessage("Download thread is creating ...(waiting website's response...)");
 
         urllist.add("http://image-net.org/archive/words.txt");
         urllist.add("http://image-net.org/imagenet_data/urls/imagenet_fall11_urls.tgz");
@@ -44,6 +45,10 @@ public class GetResources extends Task<Void> {
         fileNameList.add("imagenet_winter11_urls.tgz");
         fileNameList.add("imagenet_spring10_urls.tgz");
         fileNameList.add("imagenet_fall09_urls.tgz");
+
+        deFileNameList = resource.getResourceUrlFiles();
+
+
     }
 
     @Override
@@ -62,11 +67,6 @@ public class GetResources extends Task<Void> {
         for(int i=1;i<5;i++) {
             try {
                 Path inPath = resource.resolveResourcePath(fileNameList.get(i));
-
-                if(!Files.exists(inPath))
-                    continue;
-
-                this.updateMessage(i + " / 4 : " + fileNameList.get(i) + " is decompressing...");
 
                 TarArchiveInputStream zis = new TarArchiveInputStream(new GzipCompressorInputStream(
                         new BufferedInputStream(new FileInputStream(inPath.toString()))));
@@ -89,7 +89,8 @@ public class GetResources extends Task<Void> {
                                 while (-1 != (bytesRead = zis.read(buf))){
                                     fos.write(buf, 0, bytesRead);
                                     nread += bytesRead;
-                                    updateMessage(nread + "/" + length);
+                                    updateMessage(i + " / 4 : " + fileNameList.get(i) + " is decompressing.(" +
+                                            nread + "/" + length +")");
                                     updateProgress(nread, length);
                                 }
                             } finally {
@@ -124,7 +125,9 @@ public class GetResources extends Task<Void> {
         for(i=0; i<5; i++) {
             try {
                 wantToStoreFile = resource.resolveResourcePath(fileNameList.get(i));
-                if(Files.exists(wantToStoreFile))
+
+//                如果已經存在，就不要下載
+                if(Files.exists(resource.resolveResourcePath(deFileNameList.get(i))))
                     continue;
 
                 file = new File(wantToStoreFile.toString());
@@ -156,8 +159,10 @@ public class GetResources extends Task<Void> {
                 conn.disconnect();
             } catch (MalformedURLException e) {
                 System.out.println("Malformed URL: " + e.getMessage());
+                this.updateMessage((i + 1) + " / 5 : " + fileNameList.get(i) + " " + e.getMessage());
             } catch (IOException e) {
                 System.out.println("IOException: " + e.getMessage());
+                this.updateMessage((i + 1) + " / 5 : " + fileNameList.get(i) + " " + e.getMessage());
             }
         }
         this.updateMessage("Download finished.");

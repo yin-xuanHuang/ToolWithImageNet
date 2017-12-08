@@ -28,15 +28,12 @@ public class CleanImages extends Task<Void> {
     @Override
     protected Void call() throws Exception {
 
-        System.out.println("debugm");
         totalFiles = getTotalFiles();
-        System.out.println("debugm1");
         if(totalFiles == -1){
             updateMessage("Can't find all image sub directories.");
             System.out.println("Can't find all image sub directories.");
             return null;
         }
-        System.out.println("debugm2");
         Path imagePath = resource.getImageDirPath();
 //        create cleanImageDir
         Path cleanDirPath = resource.getCleanDirPath();
@@ -121,4 +118,5 @@ public class CleanImages extends Task<Void> {
             return false;
 
     }
+
 }

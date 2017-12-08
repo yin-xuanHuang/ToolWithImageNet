@@ -14,7 +14,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 
-<BorderPane fx:controller="sample.Controller" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
     <center>
         <TabPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" tabMinWidth="275.0" BorderPane.alignment="CENTER">
             <tabs>
@@ -213,7 +213,6 @@
                                                                             </VBox.margin>
                                                                             <children>
                                                                                 <Button fx:id="stepFourRun" mnemonicParsing="false" onAction="#stepFourRunAction" text="Run" />
-                                                                                <Button fx:id="stepFourCancel" mnemonicParsing="false" onAction="#stepFourRunAction" text="Cancel" />
                                                                             </children>
                                                                         </HBox>
                                                                     </children>
@@ -254,7 +253,6 @@
                                                                             </VBox.margin>
                                                                             <children>
                                                                                 <Button fx:id="stepFiveRun" mnemonicParsing="false" onAction="#stepFiveRunAction" text="Run" />
-                                                                                <Button fx:id="stepFiveCancel" mnemonicParsing="false" onAction="#stepFiveRunAction" text="Cancel" />
                                                                             </children>
                                                                         </HBox>
                                                                     </children>

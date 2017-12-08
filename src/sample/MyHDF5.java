@@ -47,7 +47,7 @@ public class MyHDF5 {
      *
      * @param dims An array of the size of each dimension
      * @return if >= 0 : the index of data space
-     *         else    : the error of status
+     *         else    : the error ojf status
      */
     public int createNewDataSet(long[] dims, String datasetName) {
 
