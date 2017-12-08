@@ -31,8 +31,8 @@ public class ThisResource {
     public ThisResource() {
         this.projectDirName = "";
         resourceUrlFiles = new ArrayList<>();
-        resourceUrlFiles.add("winter11_urls.txt");
         resourceUrlFiles.add("fall11_urls.txt");
+        resourceUrlFiles.add("winter11_urls.txt");
         resourceUrlFiles.add("spring10_urls.txt");
         resourceUrlFiles.add("urls.txt");
     }
@@ -191,5 +191,4 @@ public class ThisResource {
 
         return wrongImageSignatures;
     }
-
 }

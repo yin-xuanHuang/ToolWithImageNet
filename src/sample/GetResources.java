@@ -47,8 +47,6 @@ public class GetResources extends Task<Void> {
         fileNameList.add("imagenet_fall09_urls.tgz");
 
         deFileNameList = resource.getResourceUrlFiles();
-
-
     }
 
     @Override
@@ -127,8 +125,11 @@ public class GetResources extends Task<Void> {
                 wantToStoreFile = resource.resolveResourcePath(fileNameList.get(i));
 
 //                如果已經存在，就不要下載
-                if(Files.exists(resource.resolveResourcePath(deFileNameList.get(i))))
+                if(i == 0 && Files.exists(resource.getResourceWordsTextPath())){
                     continue;
+                }else if(i > 0 && Files.exists(resource.resolveResourcePath(deFileNameList.get(i)))){
+                    continue;
+                }
 
                 file = new File(wantToStoreFile.toString());
                 url = new URL(urllist.get(i));

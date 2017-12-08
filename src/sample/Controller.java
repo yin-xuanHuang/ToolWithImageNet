@@ -60,7 +60,7 @@ public class Controller {
     public void initialize() {
 //        先關所有功能
         disableAllButton();
-        
+
 //        確認主、資源目錄有無存在，不存在就建立。
         try {
             Path mainDirPath = resource.getMainDirPath();

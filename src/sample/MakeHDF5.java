@@ -174,13 +174,10 @@ public class MakeHDF5 extends Task<Void> {
     }
 
     /**
-     * Step 1 : creating byte arrays to match HDF5 datasets.
      *
      * Step - : processing images by imageProcessing().
      *
-     * Step - : copy byte array of a image to byte array(HDF5 dataset match) cell by cell.
-     *
-     * Step - : write byte array(HDF5 dataset match)s to HDF5 file, and close file.
+     * Step - : write byte array of a image to the dataset(HDF5 file).
      *
      * @throws Exception
      */

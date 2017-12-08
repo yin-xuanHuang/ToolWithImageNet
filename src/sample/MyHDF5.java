@@ -167,6 +167,7 @@ public class MyHDF5 {
 
         }
 
+        // 這裡很微妙，只是執行函式，沒有紀錄，接下來也能知道要處理那一區塊
         // Get the subset dataspace
         int status = -1;
         try {
