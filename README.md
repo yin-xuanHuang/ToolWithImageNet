@@ -27,10 +27,15 @@ Java SDK 1.8.0_151
 
 # Libraries
 OpenCV 3.3.0
+
 jarhdf5-3.3.2
+
 slf4j-api-1.7.5
+
 slf4j-simple-1.7.5
+
 tika-app-1.16
+
 xmpcore-5.1.2
 
 ----------
