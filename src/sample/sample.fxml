@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
+    <center>
+        <TabPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" tabMinWidth="275.0" BorderPane.alignment="CENTER">
+            <tabs>
+                <Tab text="createProject">
+                    <content>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                            <children>
+                                <BorderPane prefHeight="310.0" prefWidth="600.0">
+                                    <top>
+                                        <VBox alignment="TOP_CENTER" prefHeight="156.0" prefWidth="600.0" BorderPane.alignment="CENTER">
+                                            <children>
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="請輸入關鍵字，用逗號,隔開" textAlignment="CENTER">
+                                                    <VBox.margin>
+                                                        <Insets bottom="10.0" top="20.0" />
+                                                    </VBox.margin>
+                                                </Text>
+                                                <TextField fx:id="stepOneTextField" promptText="請在此輸入關鍵字">
+                                                    <VBox.margin>
+                                                        <Insets bottom="10.0" top="10.0" />
+                                                    </VBox.margin>
+                                                </TextField>
+                                                <Label fx:id="stepOneLabel" text="Nothing happened here" textAlignment="CENTER">
+                                                    <VBox.margin>
+                                                        <Insets bottom="10.0" top="10.0" />
+                                                    </VBox.margin>
+                                                </Label>
+                                                <Button fx:id="stepOneButton" mnemonicParsing="false" onAction="#stepOneSubmitAction" text="確定">
+                                                    <VBox.margin>
+                                                        <Insets bottom="10.0" top="10.0" />
+                                                    </VBox.margin>
+                                                </Button>
+                                            </children>
+                                        </VBox>
+                                    </top>
+                                    <center>
+                                        <HBox prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+                                            <children>
+                                                <VBox alignment="TOP_CENTER" prefHeight="138.0" prefWidth="300.0">
+                                                    <children>
+                                                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="自行下載imageNet資源檔(完成後請重開本程式)">
+                                                            <VBox.margin>
+                                                                <Insets top="10.0" />
+                                                            </VBox.margin>
+                                                        </Text>
+                                                        <Hyperlink fx:id="stepOneHyperlinkWord" onAction="#openWebsiteAction" text="words.txt" />
+                                                        <Hyperlink fx:id="stepOneHyperlinkUrls" onAction="#openWebsiteAction" text="4 urlCompress files" />
+                                                        <Text fx:id="selfDownloadtext2" strokeType="OUTSIDE" strokeWidth="0.0">
+                                                            <VBox.margin>
+                                                                <Insets top="10.0" />
+                                                            </VBox.margin>
+                                                        </Text>
+                                                        <Text fx:id="selfDownloadtext3" strokeType="OUTSIDE" strokeWidth="0.0" />
+                                                        <Text fx:id="selfDownloadtext4" strokeType="OUTSIDE" strokeWidth="0.0" />
+                                                    </children>
+                                                </VBox>
+                                                <VBox alignment="TOP_CENTER" prefHeight="136.0" prefWidth="301.0">
+                                                    <children>
+                                                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="一鍵自動下載、解壓縮">
+                                                            <VBox.margin>
+                                                                <Insets bottom="20.0" top="10.0" />
+                                                            </VBox.margin>
+                                                        </Text>
+                                                        <Button fx:id="stepOneAutoDownloadButton" mnemonicParsing="false" onAction="#stepOneDownloadAction" text="自動下載">
+                                                            <VBox.margin>
+                                                                <Insets top="10.0" />
+                                                            </VBox.margin>
+                                                        </Button>
+                                                    </children>
+                                                </VBox>
+                                            </children>
+                                        </HBox>
+                                    </center>
+                                </BorderPane>
+                            </children></AnchorPane>
+                    </content>
+                </Tab>
+                <Tab text="progress">
+                    <content>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                            <children>
+                                <VBox prefHeight="366.0" prefWidth="600.0">
+                                    <children>
+                                        <BorderPane prefHeight="200.0" prefWidth="200.0">
+                                            <center>
+                                                <Button fx:id="openDirectoryButton" mnemonicParsing="false" onAction="#openDirectoryAction" text="Open project" BorderPane.alignment="CENTER" />
+                                            </center>
+                                            <top>
+                                                <Label fx:id="directoryLabel" text="沒有資料夾被選擇" BorderPane.alignment="CENTER">
+                                                    <BorderPane.margin>
+                                                        <Insets top="15.0" />
+                                                    </BorderPane.margin></Label>
+                                            </top>
+                                        </BorderPane>
+                                        <TabPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="294.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE" tabMinWidth="130.0">
+                                            <tabs>
+                                                <Tab text="create url">
+                                                    <content>
+                                                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                                            <children>
+                                                                <VBox alignment="TOP_CENTER" prefHeight="214.0" prefWidth="600.0">
+                                                                    <children>
+                                                                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="產生下載文件URL檔">
+                                                                            <VBox.margin>
+                                                                                <Insets bottom="20.0" top="30.0" />
+                                                                            </VBox.margin>
+                                                                        </Text>
+                                                                        <Text layoutX="274.0" layoutY="32.0" strokeType="OUTSIDE" strokeWidth="0.0" text="將專案的wnid與資源的wnid進行比對">
+                                                                            <VBox.margin>
+                                                                                <Insets bottom="10.0" />
+                                                                            </VBox.margin>
+                                                                        </Text>
+                                                                        <Text layoutX="274.0" layoutY="48.0" strokeType="OUTSIDE" strokeWidth="0.0" text="產生url0.txt與url1.txt">
+                                                                            <VBox.margin>
+                                                                                <Insets bottom="10.0" />
+                                                                            </VBox.margin>
+                                                                        </Text>
+                                                                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="(url0.txt為非；url1.txt為是)">
+                                                                            <VBox.margin>
+                                                                                <Insets bottom="20.0" />
+                                                                            </VBox.margin>
+                                                                        </Text>
+                                                                        <Button fx:id="stepTwoRun" mnemonicParsing="false" onAction="#stepTwoRunAction" text="Run" />
+                                                                    </children>
+                                                                </VBox>
+                                                            </children>
+                                                        </AnchorPane>
+                                                    </content>
+                                                </Tab>
+                                                <Tab text="download">
+                                                    <content>
+                                                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                                            <children>
+                                                                <VBox alignment="TOP_CENTER" prefHeight="216.0" prefWidth="600.0">
+                                                                    <children>
+                                                                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="下載圖檔">
+                                                                            <VBox.margin>
+                                                                                <Insets bottom="20.0" top="30.0" />
+                                                                            </VBox.margin>
+                                                                        </Text>
+                                                                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="利用文件URL檔來下載">
+                                                                            <VBox.margin>
+                                                                                <Insets bottom="10.0" />
+                                                                            </VBox.margin>
+                                                                        </Text>
+                                                                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="產生image0與image1圖檔資料夾">
+                                                                            <VBox.margin>
+                                                                                <Insets bottom="10.0" />
+                                                                            </VBox.margin>
+                                                                        </Text>
+                                                                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="(image0為非；image1為是)">
+                                                                            <VBox.margin>
+                                                                                <Insets bottom="20.0" />
+                                                                            </VBox.margin>
+                                                                        </Text>
+                                                                        <HBox alignment="CENTER" prefHeight="55.0" prefWidth="600.0">
+                                                                            <children>
+                                                                                <Button fx:id="stepThreeRun" mnemonicParsing="false" onAction="#stepThreeRunAction" text="Run" />
+                                                                                <Button fx:id="stepThreeCancel" mnemonicParsing="false" onAction="#stepThreeRunAction" text="Cancel" />
+                                                                            </children>
+                                                                        </HBox>
+                                                                    </children>
+                                                                </VBox>
+                                                            </children>
+                                                        </AnchorPane>
+                                                    </content>
+                                                </Tab>
+                                                <Tab text="clean data">
+                                                    <content>
+                                                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                                            <children>
+                                                                <VBox alignment="TOP_CENTER" prefHeight="212.0" prefWidth="600.0">
+                                                                    <children>
+                                                                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="清除問題圖檔">
+                                                                            <VBox.margin>
+                                                                                <Insets bottom="20.0" top="30.0" />
+                                                                            </VBox.margin>
+                                                                        </Text>
+                                                                        <Text layoutX="274.0" layoutY="32.0" strokeType="OUTSIDE" strokeWidth="0.0" text="利用linux identify commandLine來計算圖檔的signature">
+                                                                            <VBox.margin>
+                                                                                <Insets bottom="10.0" />
+                                                                            </VBox.margin>
+                                                                        </Text>
+                                                                        <Text layoutX="274.0" layoutY="48.0" strokeType="OUTSIDE" strokeWidth="0.0" text="依據已有的問題圖檔signatures來判定是否為問題圖檔">
+                                                                            <VBox.margin>
+                                                                                <Insets bottom="10.0" />
+                                                                            </VBox.margin>
+                                                                        </Text>
+                                                                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="建立CleanImage資料夾，複製所有合格的圖片">
+                                                                            <VBox.margin>
+                                                                                <Insets bottom="20.0" />
+                                                                            </VBox.margin>
+                                                                        </Text>
+                                                                        <HBox alignment="TOP_CENTER" prefHeight="115.0" prefWidth="600.0">
+                                                                            <VBox.margin>
+                                                                                <Insets top="20.0" />
+                                                                            </VBox.margin>
+                                                                            <children>
+                                                                                <Button fx:id="stepFourRun" mnemonicParsing="false" onAction="#stepFourRunAction" text="Run" />
+                                                                            </children>
+                                                                        </HBox>
+                                                                    </children>
+                                                                </VBox>
+                                                            </children>
+                                                        </AnchorPane>
+                                                    </content>
+                                                </Tab>
+                                                <Tab text="toHDF5">
+                                                    <content>
+                                                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                                            <children>
+                                                                <VBox alignment="TOP_CENTER" prefHeight="211.0" prefWidth="600.0">
+                                                                    <children>
+                                                                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="製作乾淨、可供機器學習的單一HDF5數據檔">
+                                                                            <VBox.margin>
+                                                                                <Insets bottom="20.0" top="20.0" />
+                                                                            </VBox.margin>
+                                                                        </Text>
+                                                                        <Text layoutX="274.0" layoutY="32.0" strokeType="OUTSIDE" strokeWidth="0.0" text="讀取已清理的cleanImage資料夾的所有圖片">
+                                                                            <VBox.margin>
+                                                                                <Insets bottom="10.0" />
+                                                                            </VBox.margin>
+                                                                        </Text>
+                                                                        <Text layoutX="274.0" layoutY="48.0" strokeType="OUTSIDE" strokeWidth="0.0" text="建立圖片的label，並且將圖片亂數(shuffle)排列">
+                                                                            <VBox.margin>
+                                                                                <Insets bottom="10.0" />
+                                                                            </VBox.margin>
+                                                                        </Text>
+                                                                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="將label與圖片轉成byte存入對應的dataset中">
+                                                                            <VBox.margin>
+                                                                                <Insets bottom="20.0" />
+                                                                            </VBox.margin>
+                                                                        </Text>
+                                                                        <HBox alignment="CENTER" prefHeight="82.0" prefWidth="600.0">
+                                                                            <VBox.margin>
+                                                                                <Insets top="20.0" />
+                                                                            </VBox.margin>
+                                                                            <children>
+                                                                                <Button fx:id="stepFiveRun" mnemonicParsing="false" onAction="#stepFiveRunAction" text="Run" />
+                                                                            </children>
+                                                                        </HBox>
+                                                                    </children>
+                                                                </VBox>
+                                                            </children>
+                                                        </AnchorPane>
+                                                    </content>
+                                                </Tab>
+                                            </tabs>
+                                        </TabPane>
+                                    </children>
+                                </VBox>
+                            </children>
+                        </AnchorPane>
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
+    </center>
+    <bottom>
+        <VBox alignment="TOP_CENTER" prefHeight="56.0" prefWidth="600.0" BorderPane.alignment="CENTER">
+            <children>
+                <Label fx:id="progressBarLabel" text="progressLabel">
+                    <VBox.margin>
+                        <Insets bottom="5.0" top="10.0" />
+                    </VBox.margin>
+                </Label>
+                <ProgressBar fx:id="progressBar" prefWidth="500.0" progress="0.0" />
+            </children>
+        </VBox>
+    </bottom>
+</BorderPane>

@@ -13,13 +13,16 @@ import java.util.Queue;
 
 public class ImageDownloadForeman extends Task<Void> {
 
-    private final Queue<String> urlQueue;
+    private final Queue<String> url0Queue;
+    private final Queue<String> url1Queue;
+    private final ArrayList<Queue<String>> urlQueues;
     private final Queue<String> massageQueue;
 
     private ThisResource resource;
 
     private final int MAX_URLS_IN_QUEUE = 100;
     private final int MAX_CURRENT_THREADS = 32;
+    private final int CLASSIFICATION = 2;
     private long countRealDownloads = 0;
     private long countLines = 0;
     private long totalLines;
@@ -27,7 +30,12 @@ public class ImageDownloadForeman extends Task<Void> {
 
     public ImageDownloadForeman(ThisResource resource) {
 
-        this.urlQueue = new ArrayDeque<>();
+        this.url0Queue = new ArrayDeque<>();
+        this.url1Queue = new ArrayDeque<>();
+        this.urlQueues = new ArrayList<>();
+        this.urlQueues.add(url0Queue);
+        this.urlQueues.add(url1Queue);
+
         this.massageQueue = new ArrayDeque<>();
 
         this.resource = resource;
@@ -59,7 +67,7 @@ public class ImageDownloadForeman extends Task<Void> {
 
         Path imageSubDirPath;
 
-        for(int whichIndex=0; whichIndex<2; whichIndex++){
+        for(int whichIndex=0; whichIndex<CLASSIFICATION; whichIndex++){
 
             imageSubDirPath = resource.getImageSubDirPath(whichIndex);
             if(!Files.exists(imageSubDirPath))
@@ -69,12 +77,14 @@ public class ImageDownloadForeman extends Task<Void> {
 
             readAndPush(whichIndex);
 
-            downloadThreadJoin();
+            downloadThreadJoin(whichIndex);
 
             if(isCancelled()){
                 break;
             }
         }
+
+        while(!updateUIMassage());
 
         return null;
     }
@@ -96,12 +106,8 @@ public class ImageDownloadForeman extends Task<Void> {
             String input;
             while((input = urlFile.readLine()) != null){
 
-                if(urlQueue.size() < MAX_URLS_IN_QUEUE) {
-                    urlQueue.add(input);
-
-                    updateUIMassage();
-
-                } else {
+                urlQueues.get(whichIndex).add(input);
+                if(!(urlQueues.get(whichIndex).size() < MAX_URLS_IN_QUEUE)) {
 //                    建立下載執行緒
                     createImageDownloader(whichIndex);
 
@@ -112,6 +118,9 @@ public class ImageDownloadForeman extends Task<Void> {
 
                     }
                 }
+
+                updateUIMassage();
+
                 if(isCancelled()){
                     updateMessage("Wait sub-threads to shutdown.");
                     break;
@@ -127,7 +136,7 @@ public class ImageDownloadForeman extends Task<Void> {
      * Update progressBar and label messages.
      *
      */
-    private void updateUIMassage() {
+    private boolean updateUIMassage() {
 
         if(!massageQueue.isEmpty()){
             String massage = massageQueue.poll();
@@ -137,6 +146,12 @@ public class ImageDownloadForeman extends Task<Void> {
             } else {
                 updateProgress(this.countLines++, this.totalLines);
             }
+        }
+
+        if(this.countLines == this.totalLines){
+            return true;
+        } else {
+            return false;
         }
 
     }
@@ -151,7 +166,7 @@ public class ImageDownloadForeman extends Task<Void> {
         if(Thread.activeCount() < MAX_CURRENT_THREADS) {
 
 
-            new Thread(new ImageDownloader(urlQueue,
+            new Thread(new ImageDownloader(urlQueues.get(whichIndex),
                     massageQueue,
                     resource.getImageSubDirPath(whichIndex))
             ).start();
@@ -162,15 +177,15 @@ public class ImageDownloadForeman extends Task<Void> {
     /**
      * Waiting the short-term goal(download images) to be done.
      *
+     * @param whichIndex choose sub-directory where the downloading image to located.
      */
-    private void downloadThreadJoin() {
+    private void downloadThreadJoin(int whichIndex) {
 
-        while(Thread.activeCount() > beforeCreateDownloadThreadCount){
-            try{
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        while((!urlQueues.get(whichIndex).isEmpty()) || (Thread.activeCount() > beforeCreateDownloadThreadCount)){
+
+            if(!urlQueues.get(whichIndex).isEmpty())
+                createImageDownloader(whichIndex);
+
             if(isCancelled()){
                 break;
             }
@@ -187,7 +202,7 @@ public class ImageDownloadForeman extends Task<Void> {
 
         long totalLines = 0;
 
-        for(int i=0; i<2; i++){
+        for(int i=0; i<CLASSIFICATION; i++){
             Path urlFilePath = resource.getUrlSubFilePath(i);
 
             try {

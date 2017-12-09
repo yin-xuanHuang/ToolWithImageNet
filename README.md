@@ -15,7 +15,7 @@
   - 頁面三：利用上一步下載連結，用多執行緒下載圖檔
 ![圖一](img/javaDemo_stepThreeRun.png)
   - 頁面四：利用上一步下載的圖檔，進行清理作業（clean data）
-![圖一](img/javademo_stepFourRun.png)
+![圖一](img/javaDemo_stepFourRun.png)
   - 頁面五：利用上一步的clean data，進行資料包裝、單一化以便後續處理
 ![圖一](img/javaDemo_stepFiveRun.png)
 

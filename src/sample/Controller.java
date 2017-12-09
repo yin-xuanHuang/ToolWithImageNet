@@ -4,6 +4,7 @@ package sample;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
@@ -36,6 +37,9 @@ public class Controller {
 
     @FXML
     private Label stepOneLabel, directoryLabel, progressBarLabel;
+
+    @FXML
+    private Text selfDownloadtext2, selfDownloadtext3, selfDownloadtext4;
 
     @FXML
     private Button openDirectoryButton;
@@ -80,6 +84,10 @@ public class Controller {
                     }
                 }
             }
+
+            selfDownloadtext2.setText("下載後，請將檔案解壓縮後放置在");
+            selfDownloadtext3.setText(resource.getMainDirPath().toString() + "資料夾裡的");
+            selfDownloadtext4.setText("resource資料夾裡(共6個txt檔)");
 
 //            有資源wnid.txt 就開啟stepOne 的功能
             if(Files.exists(resource.getResourceWordsTextPath()))

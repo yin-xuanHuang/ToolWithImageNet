@@ -176,7 +176,8 @@ public class WnidMatcher extends Task<Void> {
         try(BufferedWriter urlFile = new BufferedWriter(
                 new FileWriter(whichUrlPath.toString(), true))) {
             for(String s: urlList) {
-                urlFile.write(s + "\n");
+                urlFile.write(s);
+                urlFile.newLine();
             }
 
         } catch (IOException e) {

@@ -65,6 +65,8 @@ public class WalkingFileTree extends SimpleFileVisitor<Path> {
         if(!type.split("/")[1].equals("jpeg")){
             if(!image2jpeg(file, out)) {
                 try {
+                    shareQueue.add("delete");
+                    shareQueue.add("total");
                     Files.deleteIfExists(out);
                     Files.deleteIfExists(file);
                 } catch (IOException e) {
@@ -127,6 +129,9 @@ public class WalkingFileTree extends SimpleFileVisitor<Path> {
             BufferedImage image = ImageIO.read(iis);
             try (OutputStream os = new FileOutputStream(out.toFile())) {
                 ImageOutputStream ios = ImageIO.createImageOutputStream(os);
+                if(image == null) {// need close???????
+                    return false;
+                }
                 ImageIO.write(image, "jpg", ios);
             } catch (Exception exp) {
                 exp.printStackTrace();
