@@ -24,6 +24,11 @@ Ubuntu 16.04
 
 Java SDK 1.8.0_151
 
+imagemagick 6.8.9-9 (identify)
+
+
+  - use Runtime.getRuntime().exec(command) in WalkingFileTree.java in CleanImages.java
+
 ----------
 
 # Libraries
