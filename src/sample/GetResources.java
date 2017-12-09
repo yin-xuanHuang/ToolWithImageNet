@@ -127,7 +127,7 @@ public class GetResources extends Task<Void> {
 //                如果已經存在，就不要下載
                 if(i == 0 && Files.exists(resource.getResourceWordsTextPath())){
                     continue;
-                }else if(i > 0 && Files.exists(resource.resolveResourcePath(deFileNameList.get(i)))){
+                }else if(i > 0 && Files.exists(resource.resolveResourcePath(deFileNameList.get(i-1)))){
                     continue;
                 }
 
